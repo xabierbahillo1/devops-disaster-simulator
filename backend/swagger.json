@@ -1,0 +1,321 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "DevOps Disaster Simulator API",
+    "description": "API del simulador de desastres DevOps. Gestiona el estado del juego, acciones del jugador, diagnósticos SSH y control de la simulación.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    { "url": "http://localhost:3001", "description": "Backend" }
+  ],
+  "paths": {
+    "/api/state": {
+      "get": {
+        "summary": "Obtener estado actual del juego",
+        "description": "Devuelve el estado completo de la simulación: servidores, servicios, finanzas, uptime, clientes, logs y eventos activos.",
+        "tags": ["Simulación"],
+        "responses": {
+          "200": {
+            "description": "Estado actual del juego",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "gameTime": {
+                      "type": "object",
+                      "properties": {
+                        "day": { "type": "integer", "example": 3 },
+                        "hour": { "type": "number", "example": 14.5 },
+                        "totalHours": { "type": "number", "example": 62 },
+                        "formatted": { "type": "string", "example": "Día 3, 14:30" },
+                        "speed": { "type": "string", "enum": ["normal", "reduced", "slow"] }
+                      }
+                    },
+                    "servers": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string", "example": "web-1" },
+                          "name": { "type": "string", "example": "Web-1" },
+                          "type": { "type": "string", "enum": ["web", "backend", "database"] },
+                          "role": { "type": "string" },
+                          "ip": { "type": "string", "example": "10.0.1.10" },
+                          "status": { "type": "string", "enum": ["green", "yellow", "red"] },
+                          "down": { "type": "boolean" },
+                          "rebooting": { "type": "boolean" },
+                          "specs": {
+                            "type": "object",
+                            "properties": {
+                              "cpuCores": { "type": "integer" },
+                              "ramGB": { "type": "integer" },
+                              "diskGB": { "type": "integer" }
+                            }
+                          },
+                          "usage": {
+                            "type": "object",
+                            "properties": {
+                              "cpuPercent": { "type": "number" },
+                              "ramUsedGB": { "type": "number" },
+                              "diskUsedGB": { "type": "number" }
+                            }
+                          },
+                          "issues": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": { "type": "integer" },
+                                "type": { "type": "string", "enum": ["traffic_spike", "memory_leak", "slow_queries", "bad_deploy", "disk_filling", "ddos", "connection_pool", "hardware_fault"] },
+                                "severity": { "type": "string", "enum": ["warning", "critical"] },
+                                "devFixInProgress": { "type": "boolean" },
+                                "devFixHoursLeft": { "type": "number", "nullable": true }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "services": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "name": { "type": "string" },
+                          "status": { "type": "string", "enum": ["green", "yellow", "red"] },
+                          "mode": { "type": "string", "enum": ["single", "ha"] }
+                        }
+                      }
+                    },
+                    "finance": {
+                      "type": "object",
+                      "properties": {
+                        "totalCost": { "type": "number" },
+                        "totalRevenue": { "type": "number" },
+                        "costPerHour": { "type": "number" },
+                        "costPerDay": { "type": "number" },
+                        "monthlyBudget": { "type": "number" },
+                        "devCosts": { "type": "number" },
+                        "penalties": { "type": "number" },
+                        "lostClients": { "type": "integer" }
+                      }
+                    },
+                    "uptime": {
+                      "type": "object",
+                      "properties": {
+                        "target": { "type": "number", "example": 99.5 },
+                        "actual": { "type": "number", "example": 99.87 },
+                        "totalHours": { "type": "number" },
+                        "downHours": { "type": "number" }
+                      }
+                    },
+                    "clients": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": { "type": "string" },
+                          "sla": { "type": "number" },
+                          "revenuePerHour": { "type": "number" },
+                          "churned": { "type": "boolean" },
+                          "churnedAt": { "type": "string", "nullable": true },
+                          "warning": { "type": "boolean" },
+                          "claimed": { "type": "boolean" },
+                          "threatened": { "type": "boolean" }
+                        }
+                      }
+                    },
+                    "paused": { "type": "boolean" },
+                    "pauseReason": { "type": "string", "nullable": true, "enum": ["new_client", "first_down", null] },
+                    "bankrupt": { "type": "boolean" },
+                    "noClients": { "type": "boolean" },
+                    "consecutiveDownHours": { "type": "number" },
+                    "logs": { "type": "array", "items": { "type": "object" } },
+                    "activeEvents": { "type": "array", "items": { "type": "object" } },
+                    "metricsHistory": { "type": "object" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/action": {
+      "post": {
+        "summary": "Ejecutar una acción del jugador",
+        "description": "Ejecuta una acción sobre un servidor o la infraestructura. Acciones disponibles: restart, scale, rollback, report_bug, purge_logs, block_traffic, purchase_server, ignore.",
+        "tags": ["Acciones"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["type", "targetId"],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["restart", "scale", "rollback", "report_bug", "purge_logs", "block_traffic", "purchase_server", "ignore"],
+                    "description": "Tipo de acción a ejecutar"
+                  },
+                  "targetId": {
+                    "type": "string",
+                    "description": "ID del servidor objetivo (ej: web-1, backend-1, db-1)",
+                    "example": "web-1"
+                  },
+                  "params": {
+                    "type": "object",
+                    "description": "Parámetros adicionales según el tipo de acción",
+                    "properties": {
+                      "cpuCores": { "type": "integer", "description": "Para scale: nuevos cores" },
+                      "ramGB": { "type": "integer", "description": "Para scale: nueva RAM en GB" },
+                      "diskGB": { "type": "integer", "description": "Para scale: nuevo disco en GB" },
+                      "serverType": { "type": "string", "enum": ["web", "backend", "database"], "description": "Para purchase_server" },
+                      "confirmed": { "type": "boolean", "description": "Confirmar acción con coste" },
+                      "issueId": { "type": "integer", "description": "Para report_bug: ID del issue" }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "restart": {
+                  "summary": "Reiniciar servidor",
+                  "value": { "type": "restart", "targetId": "web-1" }
+                },
+                "scale": {
+                  "summary": "Escalar servidor",
+                  "value": { "type": "scale", "targetId": "web-1", "params": { "cpuCores": 4, "ramGB": 8 } }
+                },
+                "purchase": {
+                  "summary": "Comprar servidor",
+                  "value": { "type": "purchase_server", "targetId": "new", "params": { "serverType": "web", "confirmed": true } }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resultado de la acción",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "needsConfirmation": { "type": "boolean" },
+                    "estimate": { "type": "object" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Faltan parámetros requeridos"
+          }
+        }
+      }
+    },
+    "/api/reset": {
+      "post": {
+        "summary": "Reiniciar la simulación",
+        "description": "Resetea toda la simulación al estado inicial. Se pierden todos los datos del juego en curso.",
+        "tags": ["Control"],
+        "responses": {
+          "200": {
+            "description": "Simulación reiniciada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Simulation reset" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/unpause": {
+      "post": {
+        "summary": "Reanudar la simulación",
+        "description": "Despausa la simulación después de un evento (intro, primer server down, nuevo cliente).",
+        "tags": ["Control"],
+        "responses": {
+          "200": {
+            "description": "Simulación reanudada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ssh/{serverId}": {
+      "get": {
+        "summary": "Obtener diagnóstico SSH de un servidor",
+        "description": "Simula una conexión SSH al servidor y devuelve la salida de comandos de diagnóstico (top, free, df, journalctl, etc.) con pistas sobre los issues activos.",
+        "tags": ["Diagnóstico"],
+        "parameters": [
+          {
+            "name": "serverId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "ID del servidor (ej: web-1, backend-1, db-1)",
+            "example": "web-1"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Salida del diagnóstico SSH",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "connected": { "type": "boolean", "description": "Si la conexión SSH fue exitosa" },
+                    "output": { "type": "string", "description": "Salida de los comandos de diagnóstico" }
+                  }
+                },
+                "examples": {
+                  "connected": {
+                    "summary": "Servidor accesible",
+                    "value": { "connected": true, "output": "Conectado a Web-1 (10.0.1.10)\n..." }
+                  },
+                  "down": {
+                    "summary": "Servidor caído",
+                    "value": { "connected": false, "output": "ssh: connect to host 10.0.1.10 port 22: Connection refused" }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Servidor no encontrado"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    { "name": "Simulación", "description": "Estado del juego" },
+    { "name": "Acciones", "description": "Acciones del jugador sobre la infraestructura" },
+    { "name": "Control", "description": "Control de la simulación (reset, pause)" },
+    { "name": "Diagnóstico", "description": "Diagnóstico SSH de servidores" }
+  ]
+}
