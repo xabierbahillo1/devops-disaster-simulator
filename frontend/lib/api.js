@@ -58,7 +58,9 @@ export async function endSession() {
   return res.json();
 }
 
-export async function fetchRanking() {
-  const res = await fetch(`${BASE}/ranking`);
+export async function fetchRanking({ page = 1, search = '' } = {}) {
+  const params = new URLSearchParams({ page });
+  if (search.trim()) params.set('search', search.trim());
+  const res = await fetch(`${BASE}/ranking?${params}`);
   return res.json();
 }

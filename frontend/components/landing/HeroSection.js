@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import TerminalLine from './TerminalLine';
 
 const FEATURES = [
@@ -7,7 +8,7 @@ const FEATURES = [
   { icon: '$', label: 'Economía', desc: 'Balance, costes, quiebra' },
 ];
 
-export default function HeroSection({ onPlay, onRanking }) {
+export default function HeroSection({ onPlay }) {
   return (
     <section className="landing-hero">
       <div className="landing-logo-mark">
@@ -49,9 +50,9 @@ export default function HeroSection({ onPlay, onRanking }) {
             <span className="landing-btn-play-text">JUGAR</span>
             <span className="landing-btn-play-arrow">▸</span>
           </button>
-          <button className="landing-btn-ranking" onClick={onRanking}>
+          <Link href="/ranking" className="landing-btn-ranking">
             RANKING
-          </button>
+          </Link>
         </div>
       </div>
     </section>

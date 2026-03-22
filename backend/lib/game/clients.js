@@ -49,11 +49,19 @@ function checkNoClients(state) {
 }
 
 function getGameMetrics(state) {
+  const totalHours = state.uptime.totalHours || 0;
+  const downHours = state.uptime.downHours || 0;
+  const realUptime = totalHours > 0
+    ? Math.round(((totalHours - downHours) / totalHours) * 10000) / 100
+    : 100;
+
   return {
     days: state.gameTime.day,
-    uptime: Math.round(state.uptime.actual * 100) / 100,
+    uptime: realUptime,
     balance: Math.round(state.finance.totalRevenue - state.finance.totalCost),
     clients: state.clients.filter(c => !c.churned).length,
+    totalHours: Math.round(totalHours * 100) / 100,
+    downHours: Math.round(downHours * 100) / 100,
   };
 }
 

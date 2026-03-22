@@ -1,15 +1,16 @@
 require('dotenv').config({ path: require('path').join(__dirname, '..', '..', '.env') });
 const { initDB, getPool } = require('./db');
 
+// total_hours = days * 24, down_hours calculado a partir del uptime%
 const SEED_DATA = [
-  { nickname: 'xabi_ops',     days: 42, uptime: 99.87, balance: 12450, clients: 7 },
-  { nickname: 'sre_queen',    days: 38, uptime: 99.72, balance: 9820,  clients: 6 },
-  { nickname: 'k8s_lord',     days: 35, uptime: 99.65, balance: 8100,  clients: 6 },
-  { nickname: 'deploy_ninja', days: 30, uptime: 99.41, balance: 6340,  clients: 5 },
-  { nickname: 'root42',       days: 28, uptime: 99.20, balance: 5200,  clients: 5 },
-  { nickname: 'infra_punk',   days: 25, uptime: 98.90, balance: 3800,  clients: 4 },
-  { nickname: 'pager_duty',   days: 22, uptime: 98.55, balance: 2900,  clients: 4 },
-  { nickname: 'on_call_24_7', days: 18, uptime: 97.80, balance: 1200,  clients: 3 },
+  { nickname: 'LordUptime',      days: 42, balance: 12450, total_hours: 1008, down_hours: 1.31  },
+  { nickname: 'NginxInavible',   days: 38, balance: 9820,  total_hours: 912,  down_hours: 2.55  },
+  { nickname: 'ElSudoReloaded',  days: 35, balance: 8100,  total_hours: 840,  down_hours: 2.94  },
+  { nickname: 'Captain_CICD',    days: 30, balance: 6340,  total_hours: 720,  down_hours: 4.25  },
+  { nickname: 'git_push_force',  days: 28, balance: 5200,  total_hours: 672,  down_hours: 5.38  },
+  { nickname: 'CronJobiWan',     days: 25, balance: 3800,  total_hours: 600,  down_hours: 6.60  },
+  { nickname: 'SenorDeploy',     days: 22, balance: 2900,  total_hours: 528,  down_hours: 7.66  },
+  { nickname: 'PodCrashLoop',    days: 18, balance: 1200,  total_hours: 432,  down_hours: 9.50  },
 ];
 
 async function seed() {
@@ -27,10 +28,13 @@ async function seed() {
   try {
     await client.query('BEGIN');
     for (const g of SEED_DATA) {
+      const uptime = g.total_hours > 0
+        ? Math.round(((g.total_hours - g.down_hours) / g.total_hours) * 10000) / 100
+        : 100;
       await client.query(
-        `INSERT INTO games (nickname, days, uptime, balance, clients, finished, end_reason)
-         VALUES ($1, $2, $3, $4, $5, true, 'seed')`,
-        [g.nickname, g.days, g.uptime, g.balance, g.clients]
+        `INSERT INTO games (nickname, days, total_hours, down_hours, uptime, balance, clients, finished, end_reason)
+         VALUES ($1, $2, $3, $4, $5, $6, 0, true, 'seed')`,
+        [g.nickname, g.days, g.total_hours, g.down_hours, uptime, g.balance]
       );
     }
     await client.query('COMMIT');
