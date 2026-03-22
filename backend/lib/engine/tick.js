@@ -2,6 +2,7 @@ const { createState } = require('../core/state');
 const {
   TICK_MS, TICK_MS_DEGRADED, TICK_MS_DOWN,
   GAME_HOURS_PER_TICK, MONTHLY_BUDGET, INITIAL_CLIENTS,
+  BANKRUPTCY_WARNING_BALANCE,
 } = require('../core/constants');
 const { formatGameTime } = require('../core/helpers');
 const { addLog } = require('../core/logging');
@@ -60,6 +61,16 @@ function tick(state) {
   }
 
   calculateFinancials(state);
+
+  // Advertencia de quiebra inminente
+  const balance = state.finance.totalRevenue - state.finance.totalCost;
+  if (balance >= 0) {
+    state.bankruptWarningShown = false;
+  } else if (balance <= BANKRUPTCY_WARNING_BALANCE && !state.bankruptWarningShown && !state.bankrupt) {
+    state.bankruptWarningShown = true;
+    state.paused = true;
+  }
+
   recordMetrics(state);
 
   // Comprobar nuevos clientes cada 6h de juego
@@ -104,6 +115,7 @@ function resetSimulation(state) {
   state.noClients = false;
   state.paused = true;
   state.firstDownNotified = false;
+  state.bankruptWarningShown = false;
   state.newClientArrived = null;
 
   state.finance.costPerHour = state.servers.reduce((s, x) => s + x.costPerHour, 0);
@@ -171,7 +183,10 @@ function getCurrentState(state) {
     })),
     consecutiveDownHours: state.consecutiveDownHours,
     paused: !!state.paused,
-    pauseReason: state.paused && state.newClientArrived ? 'new_client' : state.paused && state.firstDownNotified && state.services.some(s => s.status === 'red') ? 'first_down' : null,
+    pauseReason: state.paused && state.newClientArrived ? 'new_client'
+      : state.paused && state.firstDownNotified && state.services.some(s => s.status === 'red') ? 'first_down'
+      : state.paused && state.bankruptWarningShown ? 'bankrupt_warning'
+      : null,
     newClient: state.newClientArrived || null,
     bankrupt: !!state.bankrupt,
     noClients: !!state.noClients,

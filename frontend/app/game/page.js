@@ -22,9 +22,9 @@ export default function GamePage() {
     actionFeedback, confirmData, setConfirmData,
     resetConfirm, setResetConfirm,
     showBuyMenu, setShowBuyMenu,
-    showIntro, showFirstDown, showNewClient,
+    showIntro, showFirstDown, showNewClient, showBankruptWarning,
     handleAction, handleConfirm, handleBuyServer, handleReset,
-    closeIntro, closeFirstDown, closeNewClient,
+    closeIntro, closeFirstDown, closeNewClient, closeBankruptWarning,
   } = useGameState();
 
   if (!data || !nickname) return <LoadingScreen />;
@@ -101,6 +101,19 @@ export default function GamePage() {
               { text: '¡Actúa rápido! Te dejo trabajar.' },
             ]}
             onClose={closeFirstDown}
+          />
+        );
+      })()}
+
+      {showBankruptWarning && (() => {
+        const balance = Math.round((fin.totalRevenue || 0) - (fin.totalCost || 0));
+        return (
+          <Mentor
+            messages={[
+              { text: `${nickname}, tenemos un problema serio. El balance de la empresa ha caído a $${balance}. Si seguimos así, la quiebra es inminente.`, zone: 'hud' },
+              { text: 'Si el balance cae por debajo de -$2000, la empresa quiebra y todo se acaba. ¡Actúa ya!' },
+            ]}
+            onClose={closeBankruptWarning}
           />
         );
       })()}

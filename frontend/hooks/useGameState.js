@@ -37,11 +37,13 @@ export default function useGameState() {
   const [resetConfirm, setResetConfirm]     = useState(false);
   const [showBuyMenu, setShowBuyMenu]       = useState(false);
   const [nickname, setNickname]             = useState(null);
-  const [showIntro, setShowIntro]           = useState(false);
-  const [showFirstDown, setShowFirstDown]   = useState(false);
-  const [showNewClient, setShowNewClient]   = useState(null);
+  const [showIntro, setShowIntro]                   = useState(false);
+  const [showFirstDown, setShowFirstDown]           = useState(false);
+  const [showNewClient, setShowNewClient]           = useState(null);
+  const [showBankruptWarning, setShowBankruptWarning] = useState(false);
   const firstDownHandled = useRef(false);
   const newClientHandled = useRef(false);
+  const bankruptWarningHandled = useRef(false);
 
   // Verificar sesion y cargar nick
   useEffect(() => {
@@ -64,6 +66,17 @@ export default function useGameState() {
     if (data?.pauseReason === 'first_down' && !firstDownHandled.current && !showIntro) {
       firstDownHandled.current = true;
       setShowFirstDown(true);
+    }
+  }, [data?.pauseReason, showIntro]);
+
+  // Detectar advertencia de quiebra inminente
+  useEffect(() => {
+    if (data?.pauseReason === 'bankrupt_warning' && !bankruptWarningHandled.current && !showIntro) {
+      bankruptWarningHandled.current = true;
+      setShowBankruptWarning(true);
+    }
+    if (data?.pauseReason !== 'bankrupt_warning') {
+      bankruptWarningHandled.current = false;
     }
   }, [data?.pauseReason, showIntro]);
 
@@ -130,6 +143,11 @@ export default function useGameState() {
     unpauseSimulation();
   }, []);
 
+  const closeBankruptWarning = useCallback(() => {
+    setShowBankruptWarning(false);
+    unpauseSimulation();
+  }, []);
+
   const openServer = openServerId ? (data?.servers || []).find(s => s.id === openServerId) : null;
 
   return {
@@ -148,6 +166,7 @@ export default function useGameState() {
     showIntro,
     showFirstDown,
     showNewClient,
+    showBankruptWarning,
     handleAction,
     handleConfirm,
     handleBuyServer,
@@ -155,5 +174,6 @@ export default function useGameState() {
     closeIntro,
     closeFirstDown,
     closeNewClient,
+    closeBankruptWarning,
   };
 }
