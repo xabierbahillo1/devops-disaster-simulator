@@ -192,7 +192,7 @@ function handlePurchaseServer(state, targetId, params) {
         specs: template.baseSpecs,
         provisionHours: PURCHASE_PROVISION_TICKS * GAME_HOURS_PER_TICK,
       },
-      message: `${template.role}: Setup $${setupFee} + $${Math.round(hourlyRate * 730)}/mes. ¿Confirmar?`,
+      message: `${template.role}: Setup $${setupFee} + $${Math.round(hourlyRate * 24)}/día. ¿Confirmar?`,
     };
   }
 

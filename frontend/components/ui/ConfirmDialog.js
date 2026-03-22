@@ -33,7 +33,7 @@ export default function ConfirmDialog({ data, onConfirm, onCancel }) {
             {data.estimate.setupFee !== undefined && (
               <>
                 <div style={{ color: '#ffaa00' }}>Setup: <strong>${data.estimate.setupFee}</strong> (pago único)</div>
-                <div style={{ color: '#7090b0' }}>Coste mensual: ~${data.estimate.monthlyRate}/mes</div>
+                <div style={{ color: '#7090b0' }}>Coste diario: ~${Math.round(data.estimate.hourlyRate * 24)}/día</div>
                 <div style={{ color: '#7090b0' }}>Specs: {data.estimate.specs.cpuCores} vCPU, {data.estimate.specs.ramGB} GB RAM, {data.estimate.specs.diskGB} GB Disco</div>
                 <div style={{ color: '#7090b0' }}>Provisión: ~{data.estimate.provisionHours}h</div>
               </>

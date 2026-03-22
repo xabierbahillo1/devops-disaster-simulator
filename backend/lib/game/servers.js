@@ -15,7 +15,7 @@ function freshServers(state) {
     },
     {
       id: 'backend-1', name: 'Backend-1', type: 'backend',
-      role: 'Servidor API / Backend', os: 'Ubuntu 22.04 LTS', ip: '10.0.2.10',
+      role: 'Servidor Backend', os: 'Ubuntu 22.04 LTS', ip: '10.0.2.10',
       specs: { cpuCores: 1, ramGB: 2, diskGB: 20 },
       usage: { cpuPercent: 18, ramUsedGB: 0.8, diskUsedGB: 6 },
       costPerHour: 0,

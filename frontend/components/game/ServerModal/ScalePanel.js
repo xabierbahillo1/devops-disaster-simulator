@@ -8,8 +8,8 @@ export default function ScalePanel({ server, onScale }) {
   const [ram, setRam]     = useState(server.specs.ramGB);
   const [disk, setDisk]   = useState(server.specs.diskGB);
 
-  const oldCost = server.costPerHour;
-  const newCost = cores * COST_VCPU + ram * COST_RAM + disk * COST_DISK;
+  const oldCost = server.costPerHour * 24;
+  const newCost = (cores * COST_VCPU + ram * COST_RAM + disk * COST_DISK) * 24;
   const delta   = newCost - oldCost;
   const needsReboot = cores !== server.specs.cpuCores || ram !== server.specs.ramGB;
 
@@ -58,8 +58,8 @@ export default function ScalePanel({ server, onScale }) {
       </div>
 
       <div style={{ fontSize: 11, color: '#8090b0', marginBottom: 8, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-        <span>Coste: ${oldCost.toFixed(3)}/h → <span style={{ color: delta > 0 ? '#ffaa00' : delta < 0 ? '#00ff88' : '#c8dcea', fontWeight: 600 }}>${newCost.toFixed(3)}/h</span></span>
-        <span style={{ color: delta > 0 ? '#ff8800' : '#00ff88' }}>({delta >= 0 ? '+' : ''}{delta.toFixed(3)}/h)</span>
+        <span>Coste: ${oldCost.toFixed(2)}/d → <span style={{ color: delta > 0 ? '#ffaa00' : delta < 0 ? '#00ff88' : '#c8dcea', fontWeight: 600 }}>${newCost.toFixed(2)}/d</span></span>
+        <span style={{ color: delta > 0 ? '#ff8800' : '#00ff88' }}>({delta >= 0 ? '+' : ''}{delta.toFixed(2)}/d)</span>
         {needsReboot && <span style={{ color: '#ffaa00', fontSize: 10 }}>⚠ Requiere reinicio</span>}
       </div>
 

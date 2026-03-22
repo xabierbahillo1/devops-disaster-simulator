@@ -55,7 +55,7 @@ const TRAFFIC_CURVE = [
 
 const SERVER_TEMPLATES = {
   web:      { type: 'web',      role: 'Servidor Web',              os: 'Ubuntu 22.04 LTS', subnet: '10.0.1', baseSpecs: { cpuCores: 2, ramGB: 4, diskGB: 50 } },
-  backend:  { type: 'backend',  role: 'Servidor API / Backend',    os: 'Ubuntu 22.04 LTS', subnet: '10.0.2', baseSpecs: { cpuCores: 4, ramGB: 8, diskGB: 100 } },
+  backend:  { type: 'backend',  role: 'Servidor Backend',           os: 'Ubuntu 22.04 LTS', subnet: '10.0.2', baseSpecs: { cpuCores: 4, ramGB: 8, diskGB: 100 } },
   database: { type: 'database', role: 'Base de Datos PostgreSQL',  os: 'Ubuntu 22.04 LTS', subnet: '10.0.3', baseSpecs: { cpuCores: 4, ramGB: 16, diskGB: 200 } },
 };
 
