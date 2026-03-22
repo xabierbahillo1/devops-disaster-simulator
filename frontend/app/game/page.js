@@ -115,7 +115,7 @@ export default function GamePage() {
             { text: 'En el centro tienes las métricas en tiempo real y los incidentes activos. Cuando algo falle, aparecerá ahí. Haz clic para investigar.', zone: 'metrics' },
             { text: 'A la derecha están los servicios, los clientes y el registro de eventos. Los clientes tienen SLAs exigentes: si el servicio cae demasiado tiempo, se irán... y con ellos, los ingresos.', zone: 'right' },
             { text: 'Si mantienes todo estable, vendrán clientes más grandes. Más ingresos, pero también más carga y SLAs más duros. Tendrás que escalar la infraestructura para aguantar.' },
-            { text: 'Una última cosa: los problemas llegarán. Memory leaks, deploys rotos, DDoS, discos llenos... Tu trabajo es detectarlos a tiempo y actuar rápido. Buena suerte, te la vas a necesitar.' },
+            { text: 'Una última cosa: los problemas llegarán. Memory leaks, deploys rotos, DDoS, discos llenos... Tu trabajo es detectarlos a tiempo y actuar rápido. Buena suerte, la vas a necesitar.' },
           ]}
           onClose={closeIntro}
         />
