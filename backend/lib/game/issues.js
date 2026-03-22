@@ -71,7 +71,15 @@ function processIssues(state) {
           }
           if (issue.ticksLeft !== undefined) {
             issue.ticksLeft--;
-            if (issue.ticksLeft <= 0) issue._remove = true;
+            if (issue.ticksLeft <= 0) {
+              issue._remove = true;
+              state.activeEvents.forEach(ev => {
+                if (ev.target === s.id && ev.type === 'traffic_spike' && !ev.resolved) {
+                  ev.resolved = true;
+                  ev._resolvedAt = state.gameTime.totalHours;
+                }
+              });
+            }
           }
           break;
 
@@ -81,7 +89,15 @@ function processIssues(state) {
           }
           if (issue.ticksLeft !== undefined) {
             issue.ticksLeft--;
-            if (issue.ticksLeft <= 0) issue._remove = true;
+            if (issue.ticksLeft <= 0) {
+              issue._remove = true;
+              state.activeEvents.forEach(ev => {
+                if (ev.target === s.id && ev.type === 'ddos' && !ev.resolved) {
+                  ev.resolved = true;
+                  ev._resolvedAt = state.gameTime.totalHours;
+                }
+              });
+            }
           }
           break;
 

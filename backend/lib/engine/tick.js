@@ -48,21 +48,6 @@ function tick(state) {
     applyEvent(state, eventDef);
   }
 
-  // Auto-resolver traffic spikes y ddos cuando expiran
-  state.servers.forEach(s => {
-    s.issues.forEach(i => {
-      if ((i.type === 'traffic_spike' || i.type === 'ddos') && i.ticksLeft !== undefined) {
-        if (i.ticksLeft <= 0) {
-          i._remove = true;
-          state.activeEvents.forEach(ev => {
-            if (ev.target === s.id && ev.type === i.type && !ev.resolved) ev.resolved = true;
-          });
-        }
-      }
-    });
-    s.issues = s.issues.filter(i => !i._remove);
-  });
-
   state.servers.forEach(updateServerStatus);
   updateServiceStatuses(state);
 
