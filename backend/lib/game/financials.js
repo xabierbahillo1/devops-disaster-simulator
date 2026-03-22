@@ -1,6 +1,7 @@
 const {
   DOWNTIME_WARNING_HOURS, DOWNTIME_CLAIM_HOURS,
   DOWNTIME_CRITICAL_HOURS, DOWNTIME_CHURN_HOURS,
+  MONTHLY_BUDGET,
 } = require('../core/constants');
 const { formatGameTime } = require('../core/helpers');
 const { addLog } = require('../core/logging');
@@ -12,6 +13,12 @@ function calculateFinancials(state) {
   state.finance.totalCost += costThisTick;
   state.finance.costPerHour = totalCostPerHour;
   state.finance.costPerDay = totalCostPerHour * 24;
+
+  // Presupuesto mensual dinámico: ~40% de los ingresos actuales (mínimo el valor base)
+  const activeRevenuePerHour = state.clients
+    .filter(c => !c.churned)
+    .reduce((sum, c) => sum + c.revenuePerHour, 0);
+  state.finance.monthlyBudget = Math.max(MONTHLY_BUDGET, Math.round(activeRevenuePerHour * 24 * 30 * 0.4));
 
   const health = getOverallHealth(state);
 

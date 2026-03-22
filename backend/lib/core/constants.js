@@ -5,37 +5,37 @@ const TICK_MS_DOWN       = 5000;
 const GAME_HOURS_PER_TICK = 2;
 
 // Precios de infra (por hora de juego)
-const COST_VCPU_HR    = 0.008;
-const COST_RAM_GB_HR  = 0.006;
-const COST_DISK_GB_HR = 0.0001;
+const COST_VCPU_HR    = 0.25;
+const COST_RAM_GB_HR  = 0.15;
+const COST_DISK_GB_HR = 0.003;
 
-const MONTHLY_BUDGET = 800;
+const MONTHLY_BUDGET = 2000;
 
 // Costes de desarrollo
-const DEV_COST_BASE   = 10;
-const DEV_HOURLY_RATE = 20;
+const DEV_COST_BASE   = 50;
+const DEV_HOURLY_RATE = 80;
 
 const SCALE_INSTABILITY_CHANCE = 0.12;
 
 // Contratos SLA y clientes
 
 const INITIAL_CLIENTS = [
-  { name: 'BlogTech S.L.',       sla: 98.0, revenuePerHour: 4.0,  penaltyPerHour: 5,   penaltyEscalation: 1.1, loadFactor: 0.15 },
-  { name: 'StartupLabs',         sla: 95.0, revenuePerHour: 3.0,  penaltyPerHour: 3,   penaltyEscalation: 1.0, loadFactor: 0.10 },
+  { name: 'BlogTech S.L.',       sla: 95.0, revenuePerHour: 4.5,  penaltyPerHour: 6,   penaltyEscalation: 1.1, loadFactor: 0.18 },
+  { name: 'StartupLabs',         sla: 90.0, revenuePerHour: 3.5,  penaltyPerHour: 4,   penaltyEscalation: 1.0, loadFactor: 0.12 },
 ];
 
 const POTENTIAL_CLIENTS = [
-  { name: 'E-Shop Express',      sla: 99.0, revenuePerHour: 7.0,  penaltyPerHour: 15,  penaltyEscalation: 1.2, loadFactor: 0.25, minUptime: 98.0, minDays: 2 },
-  { name: 'DataFlow Analytics',   sla: 99.0, revenuePerHour: 10.0, penaltyPerHour: 25,  penaltyEscalation: 1.3, loadFactor: 0.30, minUptime: 98.5, minDays: 4 },
-  { name: 'FinanzaPro',           sla: 99.5, revenuePerHour: 15.0, penaltyPerHour: 50,  penaltyEscalation: 1.4, loadFactor: 0.40, minUptime: 99.0, minDays: 6 },
-  { name: 'TechCorp S.L.',        sla: 99.5, revenuePerHour: 22.0, penaltyPerHour: 80,  penaltyEscalation: 1.5, loadFactor: 0.50, minUptime: 99.0, minDays: 9 },
-  { name: 'MediSalud (sanidad)',   sla: 99.9, revenuePerHour: 32.0, penaltyPerHour: 150, penaltyEscalation: 1.8, loadFactor: 0.60, minUptime: 99.5, minDays: 14 },
-  { name: 'GovPortal (público)',   sla: 99.9, revenuePerHour: 45.0, penaltyPerHour: 250, penaltyEscalation: 2.0, loadFactor: 0.70, minUptime: 99.5, minDays: 20 },
+  { name: 'E-Shop Express',      sla: 97.0, revenuePerHour: 10.0, penaltyPerHour: 20,  penaltyEscalation: 1.2, loadFactor: 0.28, minUptime: 95.0, minDays: 2 },
+  { name: 'DataFlow Analytics',  sla: 98.0, revenuePerHour: 14.0, penaltyPerHour: 35,  penaltyEscalation: 1.3, loadFactor: 0.33, minUptime: 96.0, minDays: 4 },
+  { name: 'FinanzaPro',          sla: 99.0, revenuePerHour: 20.0, penaltyPerHour: 65,  penaltyEscalation: 1.4, loadFactor: 0.42, minUptime: 97.5, minDays: 6 },
+  { name: 'TechCorp S.L.',       sla: 99.5, revenuePerHour: 28.0, penaltyPerHour: 110, penaltyEscalation: 1.5, loadFactor: 0.52, minUptime: 98.5, minDays: 9 },
+  { name: 'MediSalud (sanidad)', sla: 99.9, revenuePerHour: 40.0, penaltyPerHour: 200, penaltyEscalation: 1.8, loadFactor: 0.62, minUptime: 99.0, minDays: 14 },
+  { name: 'GovPortal (público)', sla: 99.9, revenuePerHour: 55.0, penaltyPerHour: 380, penaltyEscalation: 2.0, loadFactor: 0.72, minUptime: 99.5, minDays: 20 },
 ];
 
 // Umbrales de quiebra y downtime
 
-const BANKRUPTCY_BALANCE = -1000;
+const BANKRUPTCY_BALANCE = -2000;
 
 const DOWNTIME_WARNING_HOURS  = 2;
 const DOWNTIME_CLAIM_HOURS    = 4;
@@ -59,7 +59,7 @@ const SERVER_TEMPLATES = {
   database: { type: 'database', role: 'Base de Datos PostgreSQL',  os: 'Ubuntu 22.04 LTS', subnet: '10.0.3', baseSpecs: { cpuCores: 4, ramGB: 16, diskGB: 200 } },
 };
 
-const PURCHASE_SETUP_FEE   = { web: 200, backend: 350, database: 500 };
+const PURCHASE_SETUP_FEE   = { web: 1200, backend: 2000, database: 3000 };
 const PURCHASE_PROVISION_TICKS = 2;
 
 module.exports = {

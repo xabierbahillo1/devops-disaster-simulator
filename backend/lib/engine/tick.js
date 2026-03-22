@@ -43,7 +43,9 @@ function tick(state) {
   processReboots(state);
   processIssues(state);
 
-  if (state.gameTime.totalHours > 6 && Math.random() < 0.07) {
+  const activeClients = state.clients.filter(c => !c.churned).length;
+  const eventChance = 0.07 + activeClients * 0.01;
+  if (state.gameTime.totalHours > 6 && Math.random() < eventChance) {
     const eventDef = pickEvent(state);
     applyEvent(state, eventDef);
   }
