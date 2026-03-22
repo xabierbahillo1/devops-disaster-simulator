@@ -1,17 +1,20 @@
-const { createState } = require('./state');
+const { createState } = require('../core/state');
 const {
   TICK_MS, TICK_MS_DEGRADED, TICK_MS_DOWN,
   GAME_HOURS_PER_TICK, MONTHLY_BUDGET, INITIAL_CLIENTS,
-} = require('./constants');
-const { formatGameTime } = require('./helpers');
-const { addLog } = require('./logging');
-const { freshServers, rebuildServices } = require('./servers');
+} = require('../core/constants');
+const { formatGameTime } = require('../core/helpers');
+const { addLog } = require('../core/logging');
+const { freshServers, rebuildServices } = require('../game/servers');
 const { updateServerStatus, updateServiceStatuses, getOverallHealth, recordMetrics } = require('./status');
 const { naturalDrift } = require('./drift');
-const { processIssues, processReboots } = require('./issues');
-const { pickEvent, applyEvent } = require('./events');
-const { calculateFinancials } = require('./financials');
-const { checkNewClients, checkBankruptcy, checkNoClients } = require('./clients');
+const { processIssues, processReboots } = require('../game/issues');
+const { pickEvent, applyEvent } = require('../game/events');
+const { calculateFinancials } = require('../game/financials');
+const { checkNewClients, checkBankruptcy, checkNoClients, getGameMetrics } = require('../game/clients');
+const { updateGame } = require('../data/db');
+
+const DB_SYNC_INTERVAL = 5; // sincronizar con BD cada N ticks
 
 function advanceTime(state, hours) {
   state.gameTime.totalHours += hours;
@@ -80,6 +83,18 @@ function tick(state) {
   checkBankruptcy(state);
   checkNoClients(state);
 
+  // Sincronizar progreso con BD periódicamente
+  if (state._gameId && !state._gameFinished) {
+    state._ticksSinceSync = (state._ticksSinceSync || 0) + 1;
+    if (state._ticksSinceSync >= DB_SYNC_INTERVAL) {
+      state._ticksSinceSync = 0;
+      const stateJson = serializeState(state);
+      updateGame(state._gameId, getGameMetrics(state), stateJson).catch((err) => {
+        console.error('[DB] Error al sincronizar partida:', err.message);
+      });
+    }
+  }
+
   state.activeEvents = state.activeEvents.filter(e => !e.resolved || (state.gameTime.totalHours - (e._resolvedAt || 0) < 10));
 }
 
@@ -120,6 +135,26 @@ function startSimulation(session) {
   state.simulationInterval = setTimeout(() => tick(state), TICK_MS);
 }
 
+// Serializa el estado del juego a JSON, excluyendo campos no serializables
+function serializeState(state) {
+  const clone = { ...state };
+  delete clone.simulationInterval;
+  return JSON.stringify(clone);
+}
+
+// Restaura una sesión desde estado guardado en BD
+function resumeSimulation(session, savedState) {
+  const state = typeof savedState === 'string' ? JSON.parse(savedState) : savedState;
+  state.simulationInterval = null;
+  session.state = state;
+
+  // Si la partida ya terminó, no reanudar ticks
+  if (state.bankrupt || state.noClients) return;
+
+  state.simulationInterval = setTimeout(() => tick(state), TICK_MS);
+  console.log(`[SIM] Sesión restaurada: ${state.nickname} (Día ${state.gameTime?.day})`);
+}
+
 function unpauseSimulation(state) {
   state.paused = false;
   state.newClientArrived = null;
@@ -158,4 +193,4 @@ function getCurrentState(state) {
   };
 }
 
-module.exports = { startSimulation, unpauseSimulation, getCurrentState, resetSimulation, handleAction: require('./actions').handleAction };
+module.exports = { startSimulation, resumeSimulation, unpauseSimulation, getCurrentState, resetSimulation, handleAction: require('../game/actions').handleAction };

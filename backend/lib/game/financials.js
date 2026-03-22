@@ -1,10 +1,10 @@
 const {
   DOWNTIME_WARNING_HOURS, DOWNTIME_CLAIM_HOURS,
   DOWNTIME_CRITICAL_HOURS, DOWNTIME_CHURN_HOURS,
-} = require('./constants');
-const { formatGameTime } = require('./helpers');
-const { addLog } = require('./logging');
-const { getOverallHealth } = require('./status');
+} = require('../core/constants');
+const { formatGameTime } = require('../core/helpers');
+const { addLog } = require('../core/logging');
+const { getOverallHealth } = require('../engine/status');
 
 function calculateFinancials(state) {
   const totalCostPerHour = state.servers.reduce((sum, s) => sum + s.costPerHour, 0);

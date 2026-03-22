@@ -1,7 +1,7 @@
-const { SCALE_INSTABILITY_CHANCE } = require('./constants');
-const { clamp, rng } = require('./helpers');
-const { addLog } = require('./logging');
-const { updateServerStatus } = require('./status');
+const { SCALE_INSTABILITY_CHANCE } = require('../core/constants');
+const { clamp, rng } = require('../core/helpers');
+const { addLog } = require('../core/logging');
+const { updateServerStatus } = require('../engine/status');
 
 function processIssues(state) {
   state.servers.forEach(s => {

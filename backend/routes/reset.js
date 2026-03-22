@@ -1,7 +1,7 @@
 const express = require('express');
 const router  = express.Router();
 const { requireSession } = require('../middleware/session');
-const { resetSimulation } = require('../lib/simulation');
+const { resetSimulation } = require('../lib/engine/simulation');
 
 router.post('/', requireSession, (req, res) => {
   resetSimulation(req.gameState);

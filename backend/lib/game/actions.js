@@ -1,10 +1,10 @@
 const {
   GAME_HOURS_PER_TICK, DEV_COST_BASE, DEV_HOURLY_RATE,
   SERVER_TEMPLATES, PURCHASE_SETUP_FEE, PURCHASE_PROVISION_TICKS,
-} = require('./constants');
-const { clamp, rng, calcCostPerHour } = require('./helpers');
-const { addLog } = require('./logging');
-const { updateServerStatus, updateServiceStatuses } = require('./status');
+} = require('../core/constants');
+const { clamp, rng, calcCostPerHour } = require('../core/helpers');
+const { addLog } = require('../core/logging');
+const { updateServerStatus, updateServiceStatuses } = require('../engine/status');
 const { rebuildServices } = require('./servers');
 
 function handleRestart(state, targetId) {

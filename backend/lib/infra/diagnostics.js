@@ -1,4 +1,4 @@
-const { formatGameTime, rng } = require('./helpers');
+const { formatGameTime, rng } = require('../core/helpers');
 
 function getServerDiagnostics(state, serverId) {
   const s = state.servers.find(x => x.id === serverId);

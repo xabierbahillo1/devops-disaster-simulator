@@ -1,6 +1,6 @@
 const { startSimulation, unpauseSimulation, getCurrentState, resetSimulation } = require('./tick');
-const { handleAction } = require('./actions');
-const { getServerDiagnostics } = require('./diagnostics');
+const { handleAction } = require('../game/actions');
+const { getServerDiagnostics } = require('../infra/diagnostics');
 
 module.exports = {
   startSimulation,

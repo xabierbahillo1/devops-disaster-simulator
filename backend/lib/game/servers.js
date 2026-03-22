@@ -1,4 +1,4 @@
-const { calcCostPerHour } = require('./helpers');
+const { calcCostPerHour } = require('../core/helpers');
 
 function freshServers(state) {
   state.serverIdCounters = { web: 1, backend: 1, database: 1 };

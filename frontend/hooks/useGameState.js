@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
-import { sendAction, resetSimulation, unpauseSimulation } from '../lib/api';
+import { sendAction, unpauseSimulation, endSession } from '../lib/api';
 
 const fetcher = async url => {
   const key = typeof window !== 'undefined' ? sessionStorage.getItem('sessionKey') : null;
@@ -107,10 +107,10 @@ export default function useGameState() {
 
   const handleReset = useCallback(async () => {
     setResetConfirm(false);
+    await endSession().catch(() => {});
     localStorage.removeItem('playerNick');
     sessionStorage.removeItem('introSeen');
     sessionStorage.removeItem('sessionKey');
-    await resetSimulation();
     router.push('/');
   }, [router]);
 

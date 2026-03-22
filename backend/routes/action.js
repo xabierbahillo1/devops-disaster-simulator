@@ -1,7 +1,7 @@
 const express = require('express');
 const router  = express.Router();
 const { requireSession } = require('../middleware/session');
-const { handleAction } = require('../lib/simulation');
+const { handleAction } = require('../lib/engine/simulation');
 
 router.post('/', requireSession, (req, res) => {
   const { type, targetId, params } = req.body;

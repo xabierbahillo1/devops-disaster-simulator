@@ -2,13 +2,119 @@
   "openapi": "3.0.3",
   "info": {
     "title": "DevOps Disaster Simulator API",
-    "description": "API del simulador de desastres DevOps. Gestiona el estado del juego, acciones del jugador, diagnósticos SSH y control de la simulación.",
-    "version": "1.0.0"
+    "description": "API del simulador de desastres DevOps. Gestiona sesiones de juego, estado de la simulación, acciones del jugador, diagnósticos SSH, control de la simulación y ranking de partidas.",
+    "version": "2.0.0"
   },
   "servers": [
-    { "url": "http://localhost:3001", "description": "Backend" }
+    { "url": "http://localhost:3001", "description": "Backend local" }
   ],
+  "components": {
+    "securitySchemes": {
+      "SessionKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-session-key",
+        "description": "Clave de sesión devuelta por POST /api/session. Requerida en todos los endpoints excepto /api/session y /api/ranking."
+      }
+    },
+    "schemas": {
+      "Error401": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": false },
+          "message": { "type": "string", "example": "Falta x-session-key header" }
+        }
+      }
+    }
+  },
+  "security": [{ "SessionKey": [] }],
   "paths": {
+    "/api/session": {
+      "post": {
+        "summary": "Crear una sesión de juego",
+        "description": "Crea una nueva sesión e inicia la simulación. Devuelve una sessionKey que debe enviarse como header `x-session-key` en todas las peticiones posteriores.",
+        "tags": ["Sesión"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["nickname"],
+                "properties": {
+                  "nickname": {
+                    "type": "string",
+                    "description": "Nombre del jugador",
+                    "example": "xabi_ops"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sesión creada correctamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "sessionKey": { "type": "string", "description": "Clave de sesión (hex de 32 caracteres)", "example": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4" },
+                    "nickname": { "type": "string", "example": "xabi_ops" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Nickname vacío o no proporcionado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": false },
+                    "message": { "type": "string", "example": "Nickname requerido" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Cerrar sesión (salida voluntaria)",
+        "description": "Cierra la sesión del jugador y marca la partida como terminada con motivo 'quit'. La partida queda registrada en el ranking.",
+        "tags": ["Sesión"],
+        "responses": {
+          "200": {
+            "description": "Sesión cerrada correctamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Sesión cerrada" }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sesión no proporcionada o expirada",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error401" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/state": {
       "get": {
         "summary": "Obtener estado actual del juego",
@@ -132,11 +238,57 @@
                     "bankrupt": { "type": "boolean" },
                     "noClients": { "type": "boolean" },
                     "consecutiveDownHours": { "type": "number" },
-                    "logs": { "type": "array", "items": { "type": "object" } },
-                    "activeEvents": { "type": "array", "items": { "type": "object" } },
-                    "metricsHistory": { "type": "object" }
+                    "newClient": {
+                      "type": "object",
+                      "nullable": true,
+                      "properties": {
+                        "name": { "type": "string" },
+                        "sla": { "type": "number" },
+                        "revenuePerHour": { "type": "number" }
+                      }
+                    },
+                    "logs": {
+                      "type": "array",
+                      "description": "Últimos 80 eventos del log",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "integer" },
+                          "gameTime": { "type": "string" },
+                          "message": { "type": "string" },
+                          "level": { "type": "string", "enum": ["info", "success", "warning", "critical"] }
+                        }
+                      }
+                    },
+                    "activeEvents": {
+                      "type": "array",
+                      "description": "Hasta 15 incidentes activos no resueltos",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "integer" },
+                          "type": { "type": "string" },
+                          "target": { "type": "string" },
+                          "targetName": { "type": "string" },
+                          "msg": { "type": "string" },
+                          "severity": { "type": "string", "enum": ["warning", "critical"] }
+                        }
+                      }
+                    },
+                    "metricsHistory": {
+                      "type": "object",
+                      "description": "Historial de métricas por servidor: { serverId: { cpu: number[], ram: number[] } }"
+                    }
                   }
                 }
+              }
+            }
+          },
+          "401": {
+            "description": "Sesión no proporcionada o expirada",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error401" }
               }
             }
           }
@@ -146,7 +298,7 @@
     "/api/action": {
       "post": {
         "summary": "Ejecutar una acción del jugador",
-        "description": "Ejecuta una acción sobre un servidor o la infraestructura. Acciones disponibles: restart, scale, rollback, report_bug, purge_logs, block_traffic, purchase_server, ignore.",
+        "description": "Ejecuta una acción sobre un servidor o la infraestructura. Algunas acciones (purchase_server, report_bug) requieren confirmación en dos pasos: la primera llamada devuelve un presupuesto, la segunda con `confirmed: true` ejecuta la acción.",
         "tags": ["Acciones"],
         "requestBody": {
           "required": true,
@@ -163,19 +315,19 @@
                   },
                   "targetId": {
                     "type": "string",
-                    "description": "ID del servidor objetivo (ej: web-1, backend-1, db-1)",
+                    "description": "ID del servidor objetivo (ej: web-1, backend-1, db-1). Para purchase_server usar 'new'.",
                     "example": "web-1"
                   },
                   "params": {
                     "type": "object",
                     "description": "Parámetros adicionales según el tipo de acción",
                     "properties": {
-                      "cpuCores": { "type": "integer", "description": "Para scale: nuevos cores" },
-                      "ramGB": { "type": "integer", "description": "Para scale: nueva RAM en GB" },
-                      "diskGB": { "type": "integer", "description": "Para scale: nuevo disco en GB" },
-                      "serverType": { "type": "string", "enum": ["web", "backend", "database"], "description": "Para purchase_server" },
-                      "confirmed": { "type": "boolean", "description": "Confirmar acción con coste" },
-                      "issueId": { "type": "integer", "description": "Para report_bug: ID del issue" }
+                      "cpuCores": { "type": "integer", "description": "Para scale: nuevos cores (1, 2, 4, 8, 16)" },
+                      "ramGB": { "type": "integer", "description": "Para scale: nueva RAM en GB (1, 2, 4, 8, 16, 32, 64)" },
+                      "diskGB": { "type": "integer", "description": "Para scale: nuevo disco en GB (20, 50, 100, 200, 500)" },
+                      "serverType": { "type": "string", "enum": ["web", "backend", "database"], "description": "Para purchase_server: tipo de servidor a comprar" },
+                      "confirmed": { "type": "boolean", "description": "Para confirmar acciones de dos pasos (purchase_server, report_bug)" },
+                      "issueId": { "type": "integer", "description": "Para report_bug: ID del issue a reportar" }
                     }
                   }
                 }
@@ -189,8 +341,12 @@
                   "summary": "Escalar servidor",
                   "value": { "type": "scale", "targetId": "web-1", "params": { "cpuCores": 4, "ramGB": 8 } }
                 },
-                "purchase": {
-                  "summary": "Comprar servidor",
+                "purchase_step1": {
+                  "summary": "Comprar servidor (paso 1: presupuesto)",
+                  "value": { "type": "purchase_server", "targetId": "new", "params": { "serverType": "web" } }
+                },
+                "purchase_step2": {
+                  "summary": "Comprar servidor (paso 2: confirmar)",
                   "value": { "type": "purchase_server", "targetId": "new", "params": { "serverType": "web", "confirmed": true } }
                 }
               }
@@ -207,8 +363,8 @@
                   "properties": {
                     "success": { "type": "boolean" },
                     "message": { "type": "string" },
-                    "needsConfirmation": { "type": "boolean" },
-                    "estimate": { "type": "object" }
+                    "needsConfirmation": { "type": "boolean", "description": "true si la acción requiere confirmación" },
+                    "estimate": { "type": "object", "description": "Detalles del presupuesto para acciones de dos pasos" }
                   }
                 }
               }
@@ -216,6 +372,14 @@
           },
           "400": {
             "description": "Faltan parámetros requeridos"
+          },
+          "401": {
+            "description": "Sesión no proporcionada o expirada",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error401" }
+              }
+            }
           }
         }
       }
@@ -223,7 +387,7 @@
     "/api/reset": {
       "post": {
         "summary": "Reiniciar la simulación",
-        "description": "Resetea toda la simulación al estado inicial. Se pierden todos los datos del juego en curso.",
+        "description": "Resetea toda la simulación al estado inicial (Día 1, 8:00, 2 clientes, 3 servidores). Se pierden todos los datos del juego en curso.",
         "tags": ["Control"],
         "responses": {
           "200": {
@@ -239,6 +403,14 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Sesión no proporcionada o expirada",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error401" }
+              }
+            }
           }
         }
       }
@@ -246,7 +418,7 @@
     "/api/unpause": {
       "post": {
         "summary": "Reanudar la simulación",
-        "description": "Despausa la simulación después de un evento (intro, primer server down, nuevo cliente).",
+        "description": "Despausa la simulación después de un evento (primer servidor caído, llegada de nuevo cliente).",
         "tags": ["Control"],
         "responses": {
           "200": {
@@ -259,6 +431,14 @@
                     "success": { "type": "boolean", "example": true }
                   }
                 }
+              }
+            }
+          },
+          "401": {
+            "description": "Sesión no proporcionada o expirada",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error401" }
               }
             }
           }
@@ -288,14 +468,14 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "connected": { "type": "boolean", "description": "Si la conexión SSH fue exitosa" },
+                    "connected": { "type": "boolean", "description": "Si la conexión SSH fue exitosa (false si servidor caído o reiniciando)" },
                     "output": { "type": "string", "description": "Salida de los comandos de diagnóstico" }
                   }
                 },
                 "examples": {
                   "connected": {
                     "summary": "Servidor accesible",
-                    "value": { "connected": true, "output": "Conectado a Web-1 (10.0.1.10)\n..." }
+                    "value": { "connected": true, "output": "Conectado a Web-1 (10.0.1.10)\n$ top -bn1\n..." }
                   },
                   "down": {
                     "summary": "Servidor caído",
@@ -305,17 +485,67 @@
               }
             }
           },
+          "401": {
+            "description": "Sesión no proporcionada o expirada",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error401" }
+              }
+            }
+          },
           "404": {
             "description": "Servidor no encontrado"
+          }
+        }
+      }
+    },
+    "/api/ranking": {
+      "get": {
+        "summary": "Obtener ranking de partidas terminadas",
+        "description": "Devuelve las partidas terminadas (por quiebra o pérdida de clientes) ordenadas por rendimiento: días sobrevividos, uptime y balance. Endpoint público, no requiere sesión.",
+        "tags": ["Ranking"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Ranking de partidas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "ranking": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "rank": { "type": "integer", "example": 1 },
+                          "nick": { "type": "string", "example": "xabi_ops" },
+                          "days": { "type": "integer", "example": 42, "description": "Días de juego sobrevividos" },
+                          "uptime": { "type": "number", "example": 99.87, "description": "Porcentaje de uptime" },
+                          "balance": { "type": "integer", "example": 12450, "description": "Balance final en $" },
+                          "clients": { "type": "integer", "example": 7, "description": "Clientes activos al terminar" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno al consultar la base de datos"
           }
         }
       }
     }
   },
   "tags": [
+    { "name": "Sesión", "description": "Gestión de sesiones de juego" },
     { "name": "Simulación", "description": "Estado del juego" },
     { "name": "Acciones", "description": "Acciones del jugador sobre la infraestructura" },
     { "name": "Control", "description": "Control de la simulación (reset, pause)" },
-    { "name": "Diagnóstico", "description": "Diagnóstico SSH de servidores" }
+    { "name": "Diagnóstico", "description": "Diagnóstico SSH de servidores" },
+    { "name": "Ranking", "description": "Ranking de partidas terminadas (persistido en PostgreSQL)" }
   ]
 }

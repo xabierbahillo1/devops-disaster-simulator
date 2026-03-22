@@ -1,5 +1,6 @@
-const { POTENTIAL_CLIENTS, BANKRUPTCY_BALANCE } = require('./constants');
-const { addLog } = require('./logging');
+const { POTENTIAL_CLIENTS, BANKRUPTCY_BALANCE } = require('../core/constants');
+const { addLog } = require('../core/logging');
+const { finishGame } = require('../data/db');
 
 function checkNewClients(state) {
   if (state.potentialClientIndex >= POTENTIAL_CLIENTS.length) return;
@@ -33,6 +34,7 @@ function checkBankruptcy(state) {
   if (balance <= BANKRUPTCY_BALANCE && !state.bankrupt) {
     state.bankrupt = true;
     addLog(state, `[QUIEBRA] ⚠ La empresa ha entrado en bancarrota. Balance: $${Math.round(balance)}. Los acreedores han intervenido.`, 'critical');
+    persistFinishedGame(state, 'bankrupt');
   }
 }
 
@@ -42,7 +44,28 @@ function checkNoClients(state) {
   if (state.clients.length > 0 && active.length === 0) {
     state.noClients = true;
     addLog(state, `[FIN] ⚠ Todos los clientes han abandonado la empresa. No hay ingresos posibles.`, 'critical');
+    persistFinishedGame(state, 'no_clients');
   }
 }
 
-module.exports = { checkNewClients, checkBankruptcy, checkNoClients };
+function getGameMetrics(state) {
+  return {
+    days: state.gameTime.day,
+    uptime: Math.round(state.uptime.actual * 100) / 100,
+    balance: Math.round(state.finance.totalRevenue - state.finance.totalCost),
+    clients: state.clients.filter(c => !c.churned).length,
+  };
+}
+
+function persistFinishedGame(state, endReason) {
+  if (!state._gameId || state._gameFinished) return;
+  state._gameFinished = true;
+
+  const metrics = getGameMetrics(state);
+  finishGame(state._gameId, { ...metrics, endReason }).catch((err) => {
+    console.error('[DB] Error al finalizar partida:', err.message);
+    state._gameFinished = false;
+  });
+}
+
+module.exports = { checkNewClients, checkBankruptcy, checkNoClients, getGameMetrics, persistFinishedGame };

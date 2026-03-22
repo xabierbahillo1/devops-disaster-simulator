@@ -52,3 +52,13 @@ export async function fetchSSH(serverId) {
   const res = await fetch(`${BASE}/ssh/${serverId}`, { headers: sessionHeaders() });
   return res.json();
 }
+
+export async function endSession() {
+  const res = await fetch(`${BASE}/session`, { method: 'DELETE', headers: sessionHeaders() });
+  return res.json();
+}
+
+export async function fetchRanking() {
+  const res = await fetch(`${BASE}/ranking`);
+  return res.json();
+}

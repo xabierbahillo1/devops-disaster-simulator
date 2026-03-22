@@ -1,4 +1,4 @@
-const { getSession } = require('../lib/sessions');
+const { getSession } = require('../lib/data/sessions');
 
 function requireSession(req, res, next) {
   const key = req.headers['x-session-key'];

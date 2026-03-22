@@ -1,7 +1,7 @@
 const express = require('express');
 const router  = express.Router();
 const { requireSession } = require('../middleware/session');
-const { getServerDiagnostics } = require('../lib/simulation');
+const { getServerDiagnostics } = require('../lib/engine/simulation');
 
 router.get('/:serverId', requireSession, (req, res) => {
   const diag = getServerDiagnostics(req.gameState, req.params.serverId);
