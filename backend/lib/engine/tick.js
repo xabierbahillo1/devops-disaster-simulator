@@ -51,8 +51,8 @@ function tick(state) {
   state.servers.forEach(updateServerStatus);
   updateServiceStatuses(state);
 
-  // Primer servidor caido: pausamos para que el jugador reaccione
-  if (!state.firstDownNotified && state.servers.some(s => s.down)) {
+  // Primer servicio caido: pausamos para que el jugador reaccione
+  if (!state.firstDownNotified && state.services.some(s => s.status === 'red')) {
     state.firstDownNotified = true;
     state.paused = true;
   }
@@ -169,7 +169,7 @@ function getCurrentState(state) {
     })),
     consecutiveDownHours: state.consecutiveDownHours,
     paused: !!state.paused,
-    pauseReason: state.paused && state.newClientArrived ? 'new_client' : state.paused && state.firstDownNotified && state.servers.some(s => s.down) ? 'first_down' : null,
+    pauseReason: state.paused && state.newClientArrived ? 'new_client' : state.paused && state.firstDownNotified && state.services.some(s => s.status === 'red') ? 'first_down' : null,
     newClient: state.newClientArrived || null,
     bankrupt: !!state.bankrupt,
     noClients: !!state.noClients,

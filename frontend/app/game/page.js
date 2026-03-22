@@ -90,12 +90,12 @@ export default function GamePage() {
       )}
 
       {showFirstDown && (() => {
-        const downServer = (data.servers || []).find(s => s.down);
-        const downName = downServer ? downServer.name : 'uno de tus servidores';
+        const downService = (data.services || []).find(s => s.status === 'red');
+        const downName = downService ? downService.name : 'un servicio';
         return (
           <Mentor
             messages={[
-              { text: `¡${nickname}! Tenemos una emergencia. ${downName} se ha caído. Los clientes están sin servicio ahora mismo.` },
+              { text: `¡${nickname}! Tenemos una emergencia. El servicio "${downName}" está caído. Los clientes están sin servicio ahora mismo.`, zone: 'right' },
               { text: 'Revisa los incidentes activos, entra al servidor afectado y diagnostica el problema. Puedes conectarte por SSH para ver qué está pasando.', zone: 'metrics' },
               { text: 'Dependiendo del problema, tendrás que reiniciar, escalar recursos, hacer rollback o llamar al equipo de desarrollo. Cada minuto cuenta: el SLA se está degradando.', zone: 'servers' },
               { text: '¡Actúa rápido! Te dejo trabajar.' },
