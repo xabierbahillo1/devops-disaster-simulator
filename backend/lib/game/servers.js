@@ -42,7 +42,7 @@ function rebuildServices(state) {
   const dbServers = state.servers.filter(s => s.type === 'database').map(s => s.id);
 
   state.services = [
-    { id: 'nginx', name: 'Nginx (Web)', dependsOn: webServers, mode: webServers.length > 1 ? 'ha' : 'single', status: 'green' },
+    { id: 'nginx', name: 'Web', dependsOn: webServers, mode: webServers.length > 1 ? 'ha' : 'single', status: 'green' },
     { id: 'api',   name: 'API Backend',  dependsOn: backendServers, mode: backendServers.length > 1 ? 'ha' : 'single', status: 'green' },
     { id: 'pgsql', name: 'PostgreSQL',   dependsOn: dbServers, mode: dbServers.length > 1 ? 'ha' : 'single', status: 'green' },
   ];
