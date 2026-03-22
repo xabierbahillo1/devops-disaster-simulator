@@ -18,8 +18,8 @@ export default function ClientsPanel({ clients, consecutiveDownHours }) {
           </span>
         )}
       </div>
-      <div className="flex flex-col p-1.5 gap-1">
-        {clients.map(c => {
+      <div className="flex flex-col p-1.5 gap-1 overflow-y-auto" style={{ maxHeight: 180 }}>
+        {[...clients].sort((a, b) => b.revenuePerHour - a.revenuePerHour).map(c => {
           const statusColor = c.churned ? '#ff3366' : c.threatened ? '#ff3366' : c.claimed ? '#ffaa00' : c.warning ? '#ffaa00' : '#00ff88';
           const statusText  = c.churned ? 'PERDIDO' : c.threatened ? 'AMENAZA' : c.claimed ? 'RECLAMO' : c.warning ? 'QUEJA' : 'OK';
           return (
