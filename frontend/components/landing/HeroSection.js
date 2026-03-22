@@ -2,10 +2,10 @@ import Link from 'next/link';
 import TerminalLine from './TerminalLine';
 
 const FEATURES = [
-  { icon: '⬡', label: 'Infraestructura', desc: 'Servidores web, backend y BBDD' },
-  { icon: '⚠', label: 'Incidencias', desc: 'Memory leaks, DDoS, deploys rotos' },
-  { icon: '★', label: 'Clientes', desc: 'SLAs exigentes, penalizaciones reales' },
-  { icon: '$', label: 'Economía', desc: 'Balance, costes, quiebra' },
+  { icon: '⬡', label: 'Infraestructura', desc: '3 servicios para gestionar. Cada uno puede fallar en cualquier momento.' },
+  { icon: '⚠', label: 'Incidencias',     desc: 'Memory leaks, DDoS, deploys rotos... aparecen sin avisar.' },
+  { icon: '★', label: 'Clientes',         desc: 'Se van si fallas el SLA. Sin clientes, la empresa cierra.' },
+  { icon: '$', label: 'Economía',         desc: 'Balance en tiempo real. Llega a -$2000 y la empresa quiebra.' },
 ];
 
 export default function HeroSection({ onPlay }) {

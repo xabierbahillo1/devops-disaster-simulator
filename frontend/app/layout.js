@@ -5,11 +5,11 @@ export const viewport = {
 };
 
 export const metadata = {
-  title: 'DevOps Disaster Simulator — Simulador de desastres en infraestructura',
+  title: 'DevOps Disaster Simulator',
   description: 'Simulador de desastres DevOps. Gestiona servidores, resuelve incidencias, mantén el SLA y haz crecer tu empresa de hosting. Juega gratis en el navegador.',
   openGraph: {
     type: 'website',
-    title: 'DevOps Disaster Simulator — Simulador de desastres en infraestructura',
+    title: 'DevOps Disaster Simulator',
     description: 'Gestiona servidores, resuelve incidencias en tiempo real, mantén el SLA y haz crecer tu empresa de hosting. Juega gratis.',
     siteName: 'DevOps Disaster Simulator',
   },
