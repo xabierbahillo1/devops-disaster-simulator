@@ -3,19 +3,9 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
-import { sendAction, unpauseSimulation, endSession } from '../lib/api';
+import { sendAction, unpauseSimulation, endSession, fetchState } from '../lib/api';
 
-const fetcher = async url => {
-  const key = typeof window !== 'undefined' ? sessionStorage.getItem('sessionKey') : null;
-  const headers = key ? { 'x-session-key': key } : {};
-  const r = await fetch(url, { headers });
-  if (!r.ok) {
-    const err = new Error('Session error');
-    err.status = r.status;
-    throw err;
-  }
-  return r.json();
-};
+const fetcher = () => fetchState();
 
 export default function useGameState() {
   const router = useRouter();

@@ -26,6 +26,11 @@ export async function createSession(nickname) {
 
 export async function fetchState() {
   const res = await fetch(`${BASE}/state`, { headers: sessionHeaders() });
+  if (!res.ok) {
+    const err = new Error('Session error');
+    err.status = res.status;
+    throw err;
+  }
   return res.json();
 }
 
