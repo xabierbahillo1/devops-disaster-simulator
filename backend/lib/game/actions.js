@@ -4,6 +4,7 @@ const {
 } = require('../core/constants');
 const { clamp, rng, calcCostPerHour } = require('../core/helpers');
 const { addLog } = require('../core/logging');
+const logger = require('../core/logger');
 const { updateServerStatus, updateServiceStatuses } = require('../engine/status');
 const { rebuildServices } = require('./servers');
 
@@ -251,8 +252,15 @@ const handlers = {
 
 function handleAction(state, { type, targetId, params }) {
   const handler = handlers[type];
-  if (!handler) return { success: false, message: 'Acción desconocida' };
-  return handler(state, targetId, params);
+  if (!handler) {
+    logger.debug('Acción desconocida recibida', { nickname: state.nickname, type, targetId });
+    return { success: false, message: 'Acción desconocida' };
+  }
+  const result = handler(state, targetId, params);
+  if (!result.needsConfirmation) {
+    logger.debug('Acción ejecutada', { nickname: state.nickname, type, targetId, success: result.success, message: result.message });
+  }
+  return result;
 }
 
 module.exports = { handleAction };

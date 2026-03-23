@@ -14,6 +14,7 @@ const { pickEvent, applyEvent } = require('../game/events');
 const { calculateFinancials } = require('../game/financials');
 const { checkNewClients, checkBankruptcy, checkNoClients, getGameMetrics } = require('../game/clients');
 const { updateGame } = require('../data/db');
+const logger = require('../core/logger');
 
 const DB_SYNC_INTERVAL = 5; // sincronizar con BD cada N ticks
 
@@ -58,6 +59,7 @@ function tick(state) {
   if (!state.firstDownNotified && state.services.some(s => s.status === 'red')) {
     state.firstDownNotified = true;
     state.paused = true;
+    logger.debug('Primer servicio caído — simulación pausada', { nickname: state.nickname, day: state.gameTime.day });
   }
 
   calculateFinancials(state);
@@ -69,6 +71,7 @@ function tick(state) {
   } else if (balance <= BANKRUPTCY_WARNING_BALANCE && !state.bankruptWarningShown && !state.bankrupt) {
     state.bankruptWarningShown = true;
     state.paused = true;
+    logger.debug('Advertencia de quiebra — simulación pausada', { nickname: state.nickname, balance: Math.round(balance) });
   }
 
   recordMetrics(state);
@@ -88,7 +91,7 @@ function tick(state) {
       state._ticksSinceSync = 0;
       const stateJson = serializeState(state);
       updateGame(state._gameId, getGameMetrics(state), stateJson).catch((err) => {
-        console.error('[DB] Error al sincronizar partida:', err.message);
+        logger.error('Error al sincronizar partida', { gameId: state._gameId, error: err.message });
       });
     }
   }
@@ -151,7 +154,7 @@ function resumeSimulation(session, savedState) {
   if (state.bankrupt || state.noClients) return;
 
   state.simulationInterval = setTimeout(() => tick(state), TICK_MS);
-  console.log(`[SIM] Sesión restaurada: ${state.nickname} (Día ${state.gameTime?.day})`);
+  logger.info('Sesión restaurada', { nickname: state.nickname, day: state.gameTime?.day });
 }
 
 function unpauseSimulation(state) {

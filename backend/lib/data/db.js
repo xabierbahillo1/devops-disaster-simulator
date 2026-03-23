@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+const logger = require('../core/logger');
 
 let pool;
 
@@ -12,7 +13,7 @@ function getPool() {
     });
 
     pool.on('error', (err) => {
-      console.error('[DB] Error inesperado en conexión idle:', err.message);
+      logger.error('Error inesperado en conexión idle', { error: err.message });
     });
   }
   return pool;
@@ -45,7 +46,7 @@ async function initDB() {
     await client.query(`CREATE INDEX IF NOT EXISTS idx_games_session_key ON games(session_key) WHERE session_key IS NOT NULL;`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_games_nickname ON games(nickname);`);
 
-    console.log('[DB] Schema inicializado correctamente');
+    logger.info('Schema inicializado correctamente');
   } finally {
     client.release();
   }

@@ -1,5 +1,6 @@
 const { clamp, pick, rng } = require('../core/helpers');
 const { addLog } = require('../core/logging');
+const logger = require('../core/logger');
 
 const INC_MSGS = {
   traffic_spike: [
@@ -74,6 +75,7 @@ function applyEvent(state, eventDef) {
   );
   if (candidates.length === 0) return;
   const target = pick(candidates);
+  logger.debug('Evento generado', { nickname: state.nickname, type: eventDef.type, server: target.id, severity: eventDef.type === 'hardware_fault' ? 'critical' : 'warning' });
 
   const level = eventDef.type === 'hardware_fault' ? 'critical' : 'warning';
   addLog(state, `[ALERTA] ${target.name} (${target.ip}): ${msg}`, level);

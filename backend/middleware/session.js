@@ -11,6 +11,7 @@ function requireSession(req, res, next) {
   }
   req.gameState = session.state;
   req.sessionKey = key;
+  res.locals.nickname = session.state.nickname;
   next();
 }
 

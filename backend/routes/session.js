@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const logger = require('../lib/core/logger');
 const { createSession, getSession, removeSession } = require('../lib/data/sessions');
 const { startSimulation } = require('../lib/engine/tick');
 const { createGame } = require('../lib/data/db');
@@ -86,9 +87,11 @@ router.post('/', async (req, res) => {
     startSimulation(session);
     session.state._gameId = gameId;
 
+    logger.info('Sesión creada', { nickname: trimmed, gameId });
+    res.locals.nickname = trimmed;
     res.json({ success: true, sessionKey: key, nickname: trimmed });
   } catch (err) {
-    console.error('[SESSION] Error al crear sesión:', err.message);
+    logger.error('Error al crear sesión', { error: err.message, stack: err.stack });
     res.status(500).json({ success: false, message: 'Error al crear sesión' });
   }
 });
@@ -103,6 +106,7 @@ router.delete('/', (req, res) => {
   const session = getSession(key);
   if (session && session.state) {
     const state = session.state;
+    logger.info('Sesión cerrada voluntariamente', { nickname: state.nickname, day: state.gameTime?.day });
     if (state._gameId && !state._gameFinished) {
       persistFinishedGame(state, 'quit');
     }

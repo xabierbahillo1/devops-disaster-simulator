@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const logger = require('../core/logger');
 const { persistFinishedGame } = require('../game/clients');
 const { clearSessionKey, loadActiveSessions } = require('./db');
 
@@ -45,7 +46,7 @@ function removeSession(key) {
   // Limpiar session_key en BD
   if (session.state?._gameId) {
     clearSessionKey(session.state._gameId).catch((err) => {
-      console.error('[SESSION] Error al limpiar session_key:', err.message);
+      logger.error('Error al limpiar session_key', { gameId: session.state._gameId, error: err.message });
     });
   }
 
@@ -82,12 +83,12 @@ async function restoreSessions(resumeSimulationFn) {
       resumeSimulationFn(session, row.state_json);
       restored++;
     } catch (err) {
-      console.error(`[SESSION] Error restaurando sesión ${row.session_key}:`, err.message);
+      logger.error('Error restaurando sesión', { sessionKey: row.session_key, error: err.message });
     }
   }
 
   if (restored > 0) {
-    console.log(`[SESSION] ${restored} sesión(es) restaurada(s) desde BD`);
+    logger.info(`${restored} sesión(es) restaurada(s) desde BD`);
   }
 }
 

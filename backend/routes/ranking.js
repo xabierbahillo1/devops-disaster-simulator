@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const logger = require('../lib/core/logger');
 const { getRanking } = require('../lib/data/db');
 
 /**
@@ -89,7 +90,7 @@ router.get('/', async (req, res) => {
 
     res.json({ success: true, ranking, page, totalPages, total });
   } catch (err) {
-    console.error('[RANKING] Error al obtener ranking:', err.message);
+    logger.error('Error al obtener ranking', { error: err.message, stack: err.stack });
     res.status(500).json({ success: false, message: 'Error al obtener ranking' });
   }
 });
