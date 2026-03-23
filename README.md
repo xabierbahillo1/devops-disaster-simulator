@@ -16,7 +16,7 @@
 
 **DevOps Disaster Simulator** es un simulador interactivo en tiempo real donde asumes el rol de DevOps engineer de una startup tecnológica en crecimiento. Tu objetivo: gestionar la infraestructura, resolver incidencias variadas, mantener los SLAs de tus clientes y evitar que la empresa quiebre.
 
-El juego simula horas y días en tiempo real (un tick cada 2 segundos), presenta 8 tipos de incidencias distintas, y ofrece una experiencia educativa y entretenida sobre los desafíos reales de las operaciones en la nube.
+El juego simula horas y días en tiempo real (un tick cada 2 segundos) y presenta 8 tipos de incidencias distintas basadas en los desafíos reales de las operaciones en la nube.
 
 ## 🎮 Demo
 
@@ -169,7 +169,7 @@ El backend expone una API REST documentada con Swagger en `/api-docs`:
 
 ## 🌐 ¿Cómo Utiliza Este Proyecto CubePath?
 
-Este proyecto está completamente desplegado en una **Micro VPS de CubePath** con **Dokploy**, una plataforma que simplifica el despliegue en producción.
+Este proyecto está completamente desplegado en una **VPS `gp.nano` de CubePath** (1 vCPU, 2 GB RAM, 40 GB SSD, 3 TB ancho de banda) con **Dokploy**, una plataforma que simplifica el despliegue en producción.
 
 **Arquitectura:**
 - 3 contenedores Docker: Frontend (Next.js), Backend (Express) y PostgreSQL 18
