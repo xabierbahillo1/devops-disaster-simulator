@@ -86,9 +86,6 @@ Para producción (frontend y backend en dominios distintos), crea `.env.local` e
 NEXT_PUBLIC_API_URL=https://tu-backend.ejemplo.com
 ```
 
-> [!TIP]
-> En desarrollo local no es necesario. El frontend redirige `/api/*` al backend en `localhost:3001` automáticamente.
-
 Inicializa la base de datos:
 
 ```bash
