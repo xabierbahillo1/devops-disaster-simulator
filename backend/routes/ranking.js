@@ -2,6 +2,66 @@ const express = require('express');
 const router = express.Router();
 const { getRanking } = require('../lib/data/db');
 
+/**
+ * @openapi
+ * /api/ranking:
+ *   get:
+ *     summary: Obtener ranking de partidas terminadas
+ *     description: Devuelve las partidas terminadas ordenadas por rendimiento. Endpoint público, no requiere sesión.
+ *     tags: [Ranking]
+ *     security: []
+ *     parameters:
+ *       - name: page
+ *         in: query
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Número de página
+ *       - name: search
+ *         in: query
+ *         schema:
+ *           type: string
+ *         description: Filtrar por nickname
+ *     responses:
+ *       200:
+ *         description: Ranking de partidas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 ranking:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       rank:
+ *                         type: integer
+ *                         example: 1
+ *                       nick:
+ *                         type: string
+ *                         example: xabi_ops
+ *                       days:
+ *                         type: integer
+ *                         example: 42
+ *                       uptime:
+ *                         type: number
+ *                         example: 99.87
+ *                       balance:
+ *                         type: integer
+ *                         example: 12450
+ *                 page:
+ *                   type: integer
+ *                 totalPages:
+ *                   type: integer
+ *                 total:
+ *                   type: integer
+ *       500:
+ *         description: Error interno al consultar la base de datos
+ */
 router.get('/', async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
