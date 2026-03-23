@@ -1,6 +1,7 @@
 'use client';
 
 import useGameState from '../../hooks/useGameState';
+import useMobileScale from '../../hooks/useMobileScale';
 import GameHeader from '../../components/game/GameHeader';
 import InfraPanel from '../../components/game/InfraPanel';
 import MetricsChart from '../../components/game/MetricsChart';
@@ -14,9 +15,12 @@ import ActionToast from '../../components/ui/ActionToast';
 import GameOver from '../../components/game/GameOver';
 import LoadingScreen from '../../components/game/LoadingScreen';
 import ResetDialog from '../../components/game/ResetDialog';
+import MobileRotatePrompt from '../../components/game/MobileRotatePrompt';
 import Mentor from '../../components/mentor/Mentor';
 
 export default function GamePage() {
+  const { ready, isMobile, isPortrait, scale, scaledHeight } = useMobileScale();
+
   const {
     data, nickname, openServer, setOpenServerId,
     actionFeedback, confirmData, setConfirmData,
@@ -27,17 +31,33 @@ export default function GamePage() {
     closeIntro, closeFirstDown, closeNewClient, closeBankruptWarning,
   } = useGameState();
 
+  if (ready && isPortrait) return <MobileRotatePrompt />;
+
   if (!data || !nickname) return <LoadingScreen />;
 
   const gt  = data.gameTime || {};
   const fin = data.finance  || {};
 
-  return (
-    <div className="grid-bg game-root" style={{ background: '#060b12' }}>
+  const scaled = isMobile && scale < 1;
+
+  const gameContent = (
+    <div
+      className="grid-bg game-root"
+      style={{
+        background: '#060b12',
+        ...(scaled ? { height: scaledHeight, minHeight: 0, overflow: 'hidden' } : {}),
+      }}
+    >
       <GameHeader data={data} nickname={nickname} onExit={() => setResetConfirm(true)} />
 
-      <main className="flex-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[280px_1fr_300px] gap-2.5 p-2.5 xl:overflow-hidden xl:min-h-0">
-        {/* Columna izquierda: servidores */}
+      <main
+        className={`flex-1 grid gap-2.5 p-2.5${!scaled ? ' grid-cols-1 md:grid-cols-2 xl:grid-cols-[280px_1fr_300px] xl:overflow-hidden xl:min-h-0' : ''}`}
+        style={scaled ? {
+          gridTemplateColumns: '280px 1fr 300px',
+          overflow: 'hidden',
+          minHeight: 0,
+        } : {}}
+      >
         <InfraPanel
           servers={data.servers}
           showBuyMenu={showBuyMenu}
@@ -46,22 +66,31 @@ export default function GamePage() {
           onOpenServer={setOpenServerId}
         />
 
-        {/* Columna central: metricas e incidentes */}
-        <div className="flex flex-col gap-2 xl:overflow-hidden xl:min-w-0" data-zone="metrics">
+        <div
+          className={`flex flex-col gap-2${!scaled ? ' xl:overflow-hidden xl:min-w-0' : ''}`}
+          style={scaled ? { overflow: 'hidden', minWidth: 0 } : {}}
+          data-zone="metrics"
+        >
           <div style={{ fontFamily: 'Orbitron, monospace', fontSize: 10, color: '#6888a8', letterSpacing: '0.18em', paddingLeft: 4, paddingBottom: 2 }}>
             MÉTRICAS E INCIDENTES
           </div>
           <MetricsChart servers={data.servers || []} history={data.metricsHistory || {}} />
-          <div className="xl:overflow-auto flex flex-col gap-2">
+          <div className={`flex flex-col gap-2${!scaled ? ' xl:overflow-auto' : ''}`} style={scaled ? { overflowY: 'auto' } : {}}>
             <ActiveIncidents events={data.activeEvents || []} onOpenServer={setOpenServerId} />
           </div>
         </div>
 
-        {/* Columna derecha: servicios, clientes y logs */}
-        <div className="flex flex-col gap-2 md:col-span-2 xl:col-span-1 xl:overflow-hidden" data-zone="right">
+        <div
+          className={`flex flex-col gap-2${!scaled ? ' md:col-span-2 xl:col-span-1 xl:overflow-hidden' : ''}`}
+          style={scaled ? { overflow: 'hidden' } : {}}
+          data-zone="right"
+        >
           <ServicesPanel services={data.services} />
           <ClientsPanel clients={data.clients} consecutiveDownHours={data.consecutiveDownHours} />
-          <div className="xl:flex-1 xl:overflow-hidden xl:min-h-0" style={{ minHeight: 200 }}>
+          <div
+            className={!scaled ? 'xl:flex-1 xl:overflow-hidden xl:min-h-0' : ''}
+            style={{ minHeight: 200, ...(scaled ? { flex: 1, overflow: 'hidden', minHeight: 0 } : {}) }}
+          >
             <LogPanel logs={data.logs || []} />
           </div>
         </div>
@@ -80,6 +109,7 @@ export default function GamePage() {
 
       {showNewClient && (
         <Mentor
+          scale={scale}
           messages={[
             { text: `¡Buenas noticias, ${nickname}! ${showNewClient.name} quiere contratar nuestros servicios. Han firmado un SLA del ${showNewClient.sla}% y pagarán $${showNewClient.revenuePerHour}/h.`, zone: 'right' },
             { text: 'Más clientes significa más carga en los servidores. Revisa que la infraestructura aguante bien: CPU, RAM y disco. Si algo va justo, escala antes de que sea tarde.', zone: 'servers' },
@@ -94,6 +124,7 @@ export default function GamePage() {
         const downName = downService ? downService.name : 'un servicio';
         return (
           <Mentor
+            scale={scale}
             messages={[
               { text: `¡${nickname}! Tenemos una emergencia. El servicio "${downName}" está caído. Los clientes están sin servicio ahora mismo.`, zone: 'right' },
               { text: 'Revisa los incidentes activos, entra al servidor afectado y diagnostica el problema. Puedes conectarte por SSH para ver qué está pasando.', zone: 'metrics' },
@@ -109,6 +140,7 @@ export default function GamePage() {
         const balance = Math.round((fin.totalRevenue || 0) - (fin.totalCost || 0));
         return (
           <Mentor
+            scale={scale}
             messages={[
               { text: `${nickname}, tenemos un problema serio. El balance de la empresa ha caído a $${balance}. Si seguimos así, la quiebra es inminente.`, zone: 'hud' },
               { text: 'Si el balance cae por debajo de -$2000, la empresa quiebra y todo se acaba. ¡Actúa ya!' },
@@ -120,6 +152,7 @@ export default function GamePage() {
 
       {showIntro && (
         <Mentor
+          scale={scale}
           messages={[
             { text: `Bienvenido a bordo, ${nickname}. Soy el Dr. Kuberneto, fundador y CTO de la empresa. Llevamos tiempo buscando a alguien que se encargue de nuestra infraestructura... y ese alguien eres tú.` },
             { text: 'Acabamos de arrancar. Tenemos un par de clientes pequeños y tres servidores: uno web, uno de backend y una base de datos. Recursos mínimos, pero suficientes para empezar.' },
@@ -139,4 +172,21 @@ export default function GamePage() {
       <ActionToast feedback={actionFeedback} />
     </div>
   );
+
+  if (scaled) {
+    return (
+      <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', background: '#060b12' }}>
+        <div style={{
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left',
+          width: 1280,
+          height: scaledHeight,
+        }}>
+          {gameContent}
+        </div>
+      </div>
+    );
+  }
+
+  return gameContent;
 }

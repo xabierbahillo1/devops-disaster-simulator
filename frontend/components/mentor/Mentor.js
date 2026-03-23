@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import useZoneRect from '../../hooks/useZoneRect';
 import MentorPortrait from './MentorPortrait';
 
-export default function Mentor({ messages, onClose }) {
+export default function Mentor({ messages, onClose, scale = 1 }) {
   const [step, setStep] = useState(0);
   const [typing, setTyping] = useState(true);
   const [displayedText, setDisplayedText] = useState('');
@@ -45,6 +45,14 @@ export default function Mentor({ messages, onClose }) {
   const pad = 6;
   const hasZone = !!zoneRect;
 
+  // en modo movil el borde usa coordenadas del contenedor interno (viewport / scale)
+  const borderRect = zoneRect && scale !== 1 ? {
+    top:    zoneRect.top    / scale,
+    left:   zoneRect.left   / scale,
+    width:  zoneRect.width  / scale,
+    height: zoneRect.height / scale,
+  } : zoneRect;
+
   return (
     <div className="mentor-overlay">
       {/* Mascara oscura con recorte para la zona destacada */}
@@ -70,10 +78,10 @@ export default function Mentor({ messages, onClose }) {
       {hasZone && (
         <div className="mentor-zone-border" style={{
           position: 'absolute',
-          top: zoneRect.top - pad,
-          left: zoneRect.left - pad,
-          width: zoneRect.width + pad * 2,
-          height: zoneRect.height + pad * 2,
+          top:    borderRect.top    - pad,
+          left:   borderRect.left   - pad,
+          width:  borderRect.width  + pad * 2,
+          height: borderRect.height + pad * 2,
         }} />
       )}
 
