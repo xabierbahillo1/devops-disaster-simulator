@@ -1,7 +1,9 @@
 'use client';
 
+import { useRef, useEffect, useCallback } from 'react';
 import useGameState from '../../hooks/useGameState';
 import useMobileScale from '../../hooks/useMobileScale';
+import { AudioProvider, useAudioSettings } from '../../context/AudioContext';
 import GameHeader from '../../components/game/GameHeader';
 import InfraPanel from '../../components/game/InfraPanel';
 import MetricsChart from '../../components/game/MetricsChart';
@@ -19,6 +21,14 @@ import MobileRotatePrompt from '../../components/game/MobileRotatePrompt';
 import Mentor from '../../components/mentor/Mentor';
 
 export default function GamePage() {
+  return (
+    <AudioProvider>
+      <GamePageInner />
+    </AudioProvider>
+  );
+}
+
+function GamePageInner() {
   const { ready, isMobile, isPortrait, scale, scaledHeight } = useMobileScale();
 
   const {
@@ -30,6 +40,55 @@ export default function GamePage() {
     handleAction, handleConfirm, handleBuyServer, handleReset,
     closeIntro, closeFirstDown, closeNewClient, closeBankruptWarning,
   } = useGameState();
+
+  const { setMusicState, playSFX } = useAudioSettings();
+
+  const prevDown = useRef(false);
+  useEffect(() => {
+    if (!data) return;
+    const isDown = (data.services || []).some(s => s.status === 'red');
+    setMusicState(isDown ? 'incident' : 'normal');
+    prevDown.current = isDown;
+  }, [data, setMusicState]);
+
+  // alerta cuando aparece una incidencia nueva
+  const prevEventIds = useRef(new Set());
+  useEffect(() => {
+    if (!data) return;
+    const current = new Set((data.activeEvents || []).map(e => e.id));
+    for (const id of current) {
+      if (!prevEventIds.current.has(id)) {
+        playSFX('alert');
+        break;
+      }
+    }
+    prevEventIds.current = current;
+  }, [data, playSFX]);
+
+  const actionWithSFX = useCallback(async (...args) => {
+    playSFX('click');
+    return handleAction(...args);
+  }, [handleAction, playSFX]);
+
+  const confirmWithSFX = useCallback(async () => {
+    playSFX('click');
+    return handleConfirm();
+  }, [handleConfirm, playSFX]);
+
+  const buyServerWithSFX = useCallback(async (type) => {
+    playSFX('click');
+    return handleBuyServer(type);
+  }, [handleBuyServer, playSFX]);
+
+  const openServerWithSFX = useCallback((id) => {
+    playSFX('click');
+    setOpenServerId(id);
+  }, [setOpenServerId, playSFX]);
+
+  useEffect(() => {
+    if (!actionFeedback) return;
+    playSFX(actionFeedback.success ? 'correct' : 'error');
+  }, [actionFeedback, playSFX]);
 
   if (ready && isPortrait) return <MobileRotatePrompt />;
 
@@ -62,8 +121,8 @@ export default function GamePage() {
           servers={data.servers}
           showBuyMenu={showBuyMenu}
           onToggleBuyMenu={() => setShowBuyMenu(!showBuyMenu)}
-          onBuyServer={handleBuyServer}
-          onOpenServer={setOpenServerId}
+          onBuyServer={buyServerWithSFX}
+          onOpenServer={openServerWithSFX}
         />
 
         <div
@@ -76,7 +135,7 @@ export default function GamePage() {
           </div>
           <MetricsChart servers={data.servers || []} history={data.metricsHistory || {}} />
           <div className={`flex flex-col gap-2${!scaled ? ' xl:overflow-auto' : ''}`} style={scaled ? { overflowY: 'auto' } : {}}>
-            <ActiveIncidents events={data.activeEvents || []} onOpenServer={setOpenServerId} />
+            <ActiveIncidents events={data.activeEvents || []} onOpenServer={openServerWithSFX} />
           </div>
         </div>
 
@@ -97,10 +156,10 @@ export default function GamePage() {
       </main>
 
       {openServer && (
-        <ServerModal server={openServer} onAction={handleAction} onClose={() => setOpenServerId(null)} />
+        <ServerModal server={openServer} onAction={actionWithSFX} onClose={() => setOpenServerId(null)} />
       )}
 
-      <ConfirmDialog data={confirmData} onConfirm={handleConfirm} onCancel={() => setConfirmData(null)} />
+      <ConfirmDialog data={confirmData} onConfirm={confirmWithSFX} onCancel={() => setConfirmData(null)} />
 
       <GameOver
         reason={data.bankrupt ? 'bankrupt' : data.noClients ? 'no_clients' : null}

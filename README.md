@@ -38,6 +38,8 @@ El juego simula horas y días en tiempo real (un tick cada 2 segundos) y present
 
 - **Mentor interactivo (Dr. Kuberneto)** — tutorial guiado con efecto typewriter que enseña las mecánicas paso a paso, con alertas contextuales en momentos clave.
 
+- **Sistema de audio dinámico** — música generada en tiempo real con la Web Audio API. La pista cambia automáticamente entre estado tranquilo y tensión según si hay servicios caídos. Efectos de sonido para clics, acciones correctas, errores e incidencias nuevas. El mentor habla con una voz sintética (un beep por carácter).
+
 - **Ranking global persistente** — clasificación en PostgreSQL ordenada por balance final, con búsqueda y paginación.
 
 ---
@@ -141,6 +143,7 @@ devops-disaster-simulator/
 ├── frontend/
 │   ├── app/                     # Páginas Next.js (landing, game, ranking)
 │   ├── components/              # Componentes UI
+│   ├── context/                 # AudioContext (motor de audio Web API)
 │   ├── hooks/                   # useGameState, useZoneRect
 │   ├── lib/                     # Cliente API
 │   ├── styles/                  # CSS global (Tailwind + custom)

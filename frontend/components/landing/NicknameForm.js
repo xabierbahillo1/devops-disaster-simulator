@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createSession } from '../../lib/api';
+import { prewarmAudio } from '../../context/AudioContext';
 
 export default function NicknameForm({ onBack }) {
   const router = useRouter();
@@ -18,6 +19,7 @@ export default function NicknameForm({ onBack }) {
   const handleStart = async (e) => {
     e.preventDefault();
     if (!trimmed || loading) return;
+    prewarmAudio();
     setLoading(true);
 
     try {

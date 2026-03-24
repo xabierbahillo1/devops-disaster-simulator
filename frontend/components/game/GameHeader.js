@@ -1,5 +1,6 @@
 import OverallStatus from './OverallStatus';
 import HudBar from './HudBar';
+import AudioToggleButton from './AudioToggleButton';
 
 export default function GameHeader({ data, nickname, onExit }) {
   return (
@@ -28,6 +29,7 @@ export default function GameHeader({ data, nickname, onExit }) {
           <span className="hidden sm:inline" style={{ fontSize: 11, color: '#5a7898', fontFamily: 'monospace' }}>
             <span style={{ color: '#3a5068' }}>▸ </span>{nickname}
           </span>
+          <AudioToggleButton />
           <button className="btn-reset" onClick={onExit}>SALIR</button>
         </div>
       </div>

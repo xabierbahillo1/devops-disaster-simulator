@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import useZoneRect from '../../hooks/useZoneRect';
 import MentorPortrait from './MentorPortrait';
+import { useAudioSettings } from '../../context/AudioContext';
 
 export default function Mentor({ messages, onClose, scale = 1 }) {
   const [step, setStep] = useState(0);
@@ -12,6 +13,7 @@ export default function Mentor({ messages, onClose, scale = 1 }) {
   const current = messages[step];
   const isLast = step === messages.length - 1;
   const zoneRect = useZoneRect(current?.zone);
+  const { playMentorVoice } = useAudioSettings();
 
   // Efecto typewriter
   useEffect(() => {
@@ -22,14 +24,17 @@ export default function Mentor({ messages, onClose, scale = 1 }) {
     const text = current.text;
     const interval = setInterval(() => {
       i++;
+      const char = text[i - 1];
       setDisplayedText(text.slice(0, i));
+      // Sonido cada 2 caracteres
+      if (i % 2 === 0) playMentorVoice(char);
       if (i >= text.length) {
         clearInterval(interval);
         setTyping(false);
       }
     }, 18);
     return () => clearInterval(interval);
-  }, [step, current]);
+  }, [step, current, playMentorVoice]);
 
   const handleNext = useCallback(() => {
     if (typing) return;
