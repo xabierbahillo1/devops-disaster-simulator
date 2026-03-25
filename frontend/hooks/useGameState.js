@@ -33,6 +33,7 @@ export default function useGameState() {
   const [showBankruptWarning, setShowBankruptWarning] = useState(false);
   const [showPhoneCall, setShowPhoneCall]   = useState(false);
   const [showMobileChat, setShowMobileChat] = useState(false);
+  const [hasUnread, setHasUnread]           = useState(false);
   const firstDownHandled = useRef(false);
   const newClientHandled = useRef(false);
   const bankruptWarningHandled = useRef(false);
@@ -78,6 +79,7 @@ export default function useGameState() {
     if (data?.pauseReason === 'phone_call' && !phoneCallHandled.current && !showIntro) {
       phoneCallHandled.current = true;
       setShowPhoneCall(true);
+      setHasUnread(true);
     }
   }, [data?.pauseReason, showIntro]);
 
@@ -156,10 +158,15 @@ export default function useGameState() {
 
   const openMobileChat = useCallback(() => {
     setShowMobileChat(true);
+    setHasUnread(false);
   }, []);
 
   const closeMobileChat = useCallback(() => {
     setShowMobileChat(false);
+  }, []);
+
+  const markUnread = useCallback(() => {
+    setHasUnread(true);
   }, []);
 
   const openServer = openServerId ? (data?.servers || []).find(s => s.id === openServerId) : null;
@@ -191,6 +198,8 @@ export default function useGameState() {
     closeBankruptWarning,
     showPhoneCall,
     phoneUnlocked: !!data?.phoneCallShown,
+    hasUnread,
+    markUnread,
     showMobileChat,
     closePhoneCall,
     openMobileChat,

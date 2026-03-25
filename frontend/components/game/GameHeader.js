@@ -3,7 +3,7 @@ import HudBar from './HudBar';
 import AudioToggleButton from './AudioToggleButton';
 import PhoneButton from './PhoneButton';
 
-export default function GameHeader({ data, nickname, onExit, phoneUnlocked, onOpenChat }) {
+export default function GameHeader({ data, nickname, onExit, phoneUnlocked, hasUnread, onOpenChat }) {
   return (
     <header className="game-header" style={{ background: '#08111c', borderBottom: '1px solid #142030', flexShrink: 0 }}>
       <div className="game-header-top">
@@ -30,7 +30,7 @@ export default function GameHeader({ data, nickname, onExit, phoneUnlocked, onOp
           <span className="hidden sm:inline" style={{ fontSize: 11, color: '#5a7898', fontFamily: 'monospace' }}>
             <span style={{ color: '#3a5068' }}>▸ </span>{nickname}
           </span>
-          {phoneUnlocked && <PhoneButton onClick={onOpenChat} />}
+          {phoneUnlocked && <PhoneButton onClick={onOpenChat} hasUnread={hasUnread} />}
           <AudioToggleButton />
           <button className="btn-reset" onClick={onExit}>SALIR</button>
         </div>

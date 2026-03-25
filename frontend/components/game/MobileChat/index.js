@@ -10,9 +10,9 @@ import TypingIndicator from './TypingIndicator';
 const CONTACT_NAME = 'Yamlito';
 const WELCOME_MESSAGE = '¿Qué tal tus primeros días en el nuevo trabajo? 😄\nYa sabes que puedes contar conmigo para cualquier duda que tengas, como siempre.';
 
-function formatTime() {
-  const now = new Date();
-  return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+function formatGameTime(gameTime) {
+  const h = (gameTime?.hour ?? 0).toString().padStart(2, '0');
+  return `${h}:00`;
 }
 
 function buildGameContext(gameData) {
@@ -29,7 +29,7 @@ function buildGameContext(gameData) {
   };
 }
 
-export default function MobileChat({ isOpen, onClose, gameData, nickname }) {
+export default function MobileChat({ isOpen, onClose, onAiMessage, gameData, nickname }) {
   const [messages, setMessages]   = useState([]);
   const [input, setInput]         = useState('');
   const [loading, setLoading]     = useState(false);
@@ -39,8 +39,8 @@ export default function MobileChat({ isOpen, onClose, gameData, nickname }) {
   const { playSFX }  = useAudioSettings();
 
   const addMessage = useCallback((from, text) => {
-    setMessages(prev => [...prev, { id: Date.now() + Math.random(), from, text, time: formatTime() }]);
-  }, []);
+    setMessages(prev => [...prev, { id: Date.now() + Math.random(), from, text, time: formatGameTime(gameData?.gameTime) }]);
+  }, [gameData?.gameTime]);
 
   // sonido y primer mensaje al abrir el chat
   useEffect(() => {
@@ -84,6 +84,7 @@ export default function MobileChat({ isOpen, onClose, gameData, nickname }) {
       const history = messages.slice(-12).map(m => ({ from: m.from, text: m.text }));
       const { reply } = await sendChatMessage(text, history, buildGameContext(gameData));
       playSFX('chat-receive');
+      onAiMessage?.();
       addMessage('ai', reply || 'No pude procesar eso. ¿Lo repites?');
     } catch {
       addMessage('ai', 'Uy, problemas de red por mi lado. Intentalo de nuevo. 📡');
@@ -91,7 +92,7 @@ export default function MobileChat({ isOpen, onClose, gameData, nickname }) {
       setLoading(false);
       setTimeout(() => inputRef.current?.focus(), 50);
     }
-  }, [input, loading, messages, addMessage, gameData, playSFX]);
+  }, [input, loading, messages, addMessage, gameData, playSFX, onAiMessage]);
 
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'Enter' && !e.shiftKey) {

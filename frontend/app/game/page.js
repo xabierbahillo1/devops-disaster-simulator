@@ -40,7 +40,7 @@ function GamePageInner() {
     showIntro, showFirstDown, showNewClient, showBankruptWarning,
     handleAction, handleConfirm, handleBuyServer, handleReset,
     closeIntro, closeFirstDown, closeNewClient, closeBankruptWarning,
-    showPhoneCall, phoneUnlocked, showMobileChat,
+    showPhoneCall, phoneUnlocked, hasUnread, markUnread, showMobileChat,
     closePhoneCall, openMobileChat, closeMobileChat,
   } = useGameState();
 
@@ -93,6 +93,10 @@ function GamePageInner() {
     playSFX(actionFeedback.success ? 'correct' : 'error');
   }, [actionFeedback, playSFX]);
 
+  const handleAiMessage = useCallback(() => {
+    if (!showMobileChat) markUnread();
+  }, [showMobileChat, markUnread]);
+
   if (ready && isPortrait) return <MobileRotatePrompt />;
 
   if (!data || !nickname) return <LoadingScreen />;
@@ -115,6 +119,7 @@ function GamePageInner() {
         nickname={nickname}
         onExit={() => setResetConfirm(true)}
         phoneUnlocked={phoneUnlocked}
+        hasUnread={hasUnread}
         onOpenChat={openMobileChat}
       />
 
@@ -249,6 +254,7 @@ function GamePageInner() {
       <MobileChat
         isOpen={showMobileChat}
         onClose={closeMobileChat}
+        onAiMessage={handleAiMessage}
         gameData={data}
         nickname={nickname}
       />
