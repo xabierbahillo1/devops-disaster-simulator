@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 
 const ZONE_SELECTORS = {
-  header:  '.game-header',
-  hud:     '.game-hud-bar',
-  servers: '[data-zone="servers"]',
-  metrics: '[data-zone="metrics"]',
-  right:   '[data-zone="right"]',
+  header:    '.game-header',
+  hud:       '.game-hud-bar',
+  servers:   '[data-zone="servers"]',
+  metrics:   '[data-zone="metrics"]',
+  right:     '[data-zone="right"]',
+  'phone-btn': '[data-zone="phone-btn"]',
 };
 
 export default function useZoneRect(zone) {

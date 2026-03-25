@@ -64,6 +64,13 @@ function tick(state) {
 
   calculateFinancials(state);
 
+  // Evento del móvil: día 2, hora aleatoria
+  if (!state.phoneCallShown && state.gameTime.totalHours >= state.phoneCallThreshold) {
+    state.phoneCallShown = true;
+    state.paused = true;
+    logger.debug('Evento móvil — simulación pausada', { nickname: state.nickname, day: state.gameTime.day });
+  }
+
   // Advertencia de quiebra inminente
   const balance = state.finance.totalRevenue - state.finance.totalCost;
   if (balance >= 0) {
@@ -120,6 +127,10 @@ function resetSimulation(state) {
   state.firstDownNotified = false;
   state.bankruptWarningShown = false;
   state.newClientArrived = null;
+  state.phoneCallShown = false;
+  // Trigger en horario laboral día 2: totalHours 24 (08:00) a 34 (18:00)
+  // El juego arranca a las 08:00, así que día 2 las 08:00 = totalHours 24
+  state.phoneCallThreshold = 24 + Math.floor(Math.random() * 11);
 
   state.finance.costPerHour = state.servers.reduce((s, x) => s + x.costPerHour, 0);
   state.finance.costPerDay = state.finance.costPerHour * 24;
@@ -189,8 +200,10 @@ function getCurrentState(state) {
     pauseReason: state.paused && state.newClientArrived ? 'new_client'
       : state.paused && state.firstDownNotified && state.services.some(s => s.status === 'red') ? 'first_down'
       : state.paused && state.bankruptWarningShown ? 'bankrupt_warning'
+      : state.paused && state.phoneCallShown ? 'phone_call'
       : null,
     newClient: state.newClientArrived || null,
+    phoneCallShown: !!state.phoneCallShown,
     bankrupt: !!state.bankrupt,
     noClients: !!state.noClients,
     activeEvents: state.activeEvents.filter(e => !e.resolved).slice(-15),

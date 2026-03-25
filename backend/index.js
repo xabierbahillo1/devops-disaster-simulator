@@ -16,6 +16,7 @@ const resetRouter = require('./routes/reset');
 const unpauseRouter = require('./routes/unpause');
 const sshRouter = require('./routes/ssh');
 const rankingRouter = require('./routes/ranking');
+const aiRouter = require('./routes/ai');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -50,6 +51,7 @@ app.use('/api/reset', resetRouter);
 app.use('/api/unpause', unpauseRouter);
 app.use('/api/ssh', sshRouter);
 app.use('/api/ranking', rankingRouter);
+app.use('/api/ai', aiRouter);
 
 // Error logging
 app.use(expressWinston.errorLogger({

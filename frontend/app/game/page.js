@@ -19,6 +19,7 @@ import LoadingScreen from '../../components/game/LoadingScreen';
 import ResetDialog from '../../components/game/ResetDialog';
 import MobileRotatePrompt from '../../components/game/MobileRotatePrompt';
 import Mentor from '../../components/mentor/Mentor';
+import MobileChat from '../../components/game/MobileChat';
 
 export default function GamePage() {
   return (
@@ -39,6 +40,8 @@ function GamePageInner() {
     showIntro, showFirstDown, showNewClient, showBankruptWarning,
     handleAction, handleConfirm, handleBuyServer, handleReset,
     closeIntro, closeFirstDown, closeNewClient, closeBankruptWarning,
+    showPhoneCall, phoneUnlocked, showMobileChat,
+    closePhoneCall, openMobileChat, closeMobileChat,
   } = useGameState();
 
   const { setMusicState, playSFX } = useAudioSettings();
@@ -107,7 +110,13 @@ function GamePageInner() {
         ...(scaled ? { height: scaledHeight, minHeight: 0, overflow: 'hidden' } : {}),
       }}
     >
-      <GameHeader data={data} nickname={nickname} onExit={() => setResetConfirm(true)} />
+      <GameHeader
+        data={data}
+        nickname={nickname}
+        onExit={() => setResetConfirm(true)}
+        phoneUnlocked={phoneUnlocked}
+        onOpenChat={openMobileChat}
+      />
 
       <main
         className={`flex-1 grid gap-2.5 p-2.5${!scaled ? ' grid-cols-1 md:grid-cols-2 xl:grid-cols-[280px_1fr_300px] xl:overflow-hidden xl:min-h-0' : ''}`}
@@ -225,6 +234,24 @@ function GamePageInner() {
           onClose={closeIntro}
         />
       )}
+
+      {showPhoneCall && (
+        <Mentor
+          scale={scale}
+          messages={[
+            { text: '¡Espera! ¿Oyes eso? Creo que te están escribiendo al móvil...' },
+            { text: 'Ahí, ese icono. Ábrelo, puede ser alguien del sector. Los primeros días en un nuevo trabajo siempre viene bien tener a alguien de confianza a quien preguntar.', zone: 'phone-btn' },
+          ]}
+          onClose={closePhoneCall}
+        />
+      )}
+
+      <MobileChat
+        isOpen={showMobileChat}
+        onClose={closeMobileChat}
+        gameData={data}
+        nickname={nickname}
+      />
 
       {resetConfirm && <ResetDialog onConfirm={handleReset} onCancel={() => setResetConfirm(false)} />}
 

@@ -25,6 +25,8 @@ function createState(nickname) {
     firstDownNotified: false,
     bankruptWarningShown: false,
     newClientArrived: null,
+    phoneCallShown: false,
+    phoneCallThreshold: 0,
     currentTickHours: GAME_HOURS_PER_TICK,
     serverIdCounters: { web: 1, backend: 1, database: 1 },
   };

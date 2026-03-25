@@ -38,6 +38,13 @@ module.exports = {
         blink:    { '0%,49%': { opacity: 1 }, '50%,100%': { opacity: 0 } },
         'slide-in':{ '0%': { transform: 'translateY(-6px)', opacity: 0 }, '100%': { transform: 'translateY(0)', opacity: 1 } },
         'fade-up': { '0%': { transform: 'translateY(8px)', opacity: 0 }, '100%': { transform: 'translateY(0)', opacity: 1 } },
+        'phone-vibrate': {
+          '0%, 50%, 100%': { transform: 'rotate(0deg)' },
+          '10%': { transform: 'rotate(-12deg)' },
+          '20%': { transform: 'rotate(12deg)' },
+          '30%': { transform: 'rotate(-10deg)' },
+          '40%': { transform: 'rotate(10deg)' },
+        },
       },
       animation: {
         'glow-green': 'glow-green 2.5s ease-in-out infinite',
@@ -46,6 +53,7 @@ module.exports = {
         blink:        'blink 1s step-end infinite',
         'slide-in':   'slide-in 0.25s ease-out',
         'fade-up':    'fade-up 0.4s ease-out',
+        'phone-vibrate': 'phone-vibrate 0.7s ease-in-out infinite',
       },
     },
   },

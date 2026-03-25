@@ -38,6 +38,8 @@ El juego simula horas y días en tiempo real (un tick cada 2 segundos) y present
 
 - **Mentor interactivo (Dr. Kuberneto)** — tutorial guiado con efecto typewriter que enseña las mecánicas paso a paso, con alertas contextuales en momentos clave.
 
+- **Amigo DevOps con IA (Yamlito)** — a partir del segundo día de juego aparece un icono de móvil en el header. Un contacto del sector te escribe para ver cómo te va. Puedes consultarle dudas sobre incidencias, estrategia e infraestructura a través de un chat. La IA está contextualizada con el estado actual de tu partida y te guía de forma conversacional, paso a paso, como lo haría un compañero de trabajo real.
+
 - **Sistema de audio dinámico** — música generada en tiempo real con la Web Audio API. La pista cambia automáticamente entre estado tranquilo y tensión según si hay servicios caídos. Efectos de sonido para clics, acciones correctas, errores e incidencias nuevas. El mentor habla con una voz sintética (un beep por carácter).
 
 - **Ranking global persistente** — clasificación en PostgreSQL ordenada por balance final, con búsqueda y paginación.
@@ -80,6 +82,10 @@ Crea un archivo `.env` en la carpeta `backend/`:
 ```env
 DATABASE_URL=postgresql://usuario:password@localhost:5432/devops_sim
 PORT=3001
+
+# Necesario para el asistente IA (Yamlito)
+# Obtén tu clave gratuita en https://openrouter.ai/keys
+OPENROUTER_API_KEY=sk-or-v1-...
 ```
 
 Para producción (frontend y backend en dominios distintos), crea `.env.local` en `frontend/`:
@@ -132,11 +138,14 @@ devops-disaster-simulator/
 ├── backend/
 │   ├── index.js                 # Entry point Express (puerto 3001)
 │   ├── routes/                  # Endpoints API REST
+│   │   └── ai.js                # Asistente IA Yamlito
 │   ├── lib/
 │   │   ├── core/                # Constantes, helpers, estado, logging
 │   │   ├── engine/              # Motor de simulación (ticks, drift, status)
 │   │   ├── game/                # Lógica de juego (acciones, clientes, eventos)
 │   │   ├── infra/               # Diagnósticos SSH
+│   │   ├── ai/
+│   │   │   └── openrouter.js    # Cliente OpenRouter + system prompt de Yamlito
 │   │   └── data/                # PostgreSQL, sesiones, seed
 │   ├── swagger.json             # OpenAPI docs
 │   └── package.json
@@ -144,7 +153,7 @@ devops-disaster-simulator/
 │   ├── app/                     # Páginas Next.js (landing, game, ranking)
 │   ├── components/              # Componentes UI
 │   ├── context/                 # AudioContext (motor de audio Web API)
-│   ├── hooks/                   # useGameState, useZoneRect
+│   ├── hooks/                   # useGameState, useZoneRect, useMobileScale
 │   ├── lib/                     # Cliente API
 │   ├── styles/                  # CSS global (Tailwind + custom)
 │   ├── icon.png                 # Logo de la app
@@ -167,6 +176,7 @@ El backend expone una API REST documentada con Swagger en `/api-docs`:
 | `POST` | `/api/unpause` | Reanudar simulación |
 | `GET` | `/api/ssh/:serverId` | Diagnósticos SSH |
 | `GET` | `/api/ranking` | Clasificación global |
+| `POST` | `/api/ai/chat` | Mensaje al asistente Yamlito |
 
 ---
 
@@ -214,6 +224,12 @@ Este proyecto está completamente desplegado en una **VPS `gp.nano` de CubePath*
 ![Tutorial](./docs/screenshots/mentor.png)
 
 *Tutor interactivo con explicaciones paso a paso*
+
+### Yamlito — Amigo DevOps con IA
+
+![Yamlito Chat](./docs/screenshots/amigo.png)
+
+*Chat con un contacto del sector que aparece durante el segundo día.*
 
 ---
 

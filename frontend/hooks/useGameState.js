@@ -31,9 +31,12 @@ export default function useGameState() {
   const [showFirstDown, setShowFirstDown]           = useState(false);
   const [showNewClient, setShowNewClient]           = useState(null);
   const [showBankruptWarning, setShowBankruptWarning] = useState(false);
+  const [showPhoneCall, setShowPhoneCall]   = useState(false);
+  const [showMobileChat, setShowMobileChat] = useState(false);
   const firstDownHandled = useRef(false);
   const newClientHandled = useRef(false);
   const bankruptWarningHandled = useRef(false);
+  const phoneCallHandled = useRef(false);
 
   // Verificar sesion y cargar nick
   useEffect(() => {
@@ -67,6 +70,14 @@ export default function useGameState() {
     }
     if (data?.pauseReason !== 'bankrupt_warning') {
       bankruptWarningHandled.current = false;
+    }
+  }, [data?.pauseReason, showIntro]);
+
+  // Mostrar mentor la primera vez que llega el evento de llamada amigo
+  useEffect(() => {
+    if (data?.pauseReason === 'phone_call' && !phoneCallHandled.current && !showIntro) {
+      phoneCallHandled.current = true;
+      setShowPhoneCall(true);
     }
   }, [data?.pauseReason, showIntro]);
 
@@ -138,6 +149,19 @@ export default function useGameState() {
     unpauseSimulation();
   }, []);
 
+  const closePhoneCall = useCallback(() => {
+    setShowPhoneCall(false);
+    unpauseSimulation();
+  }, []);
+
+  const openMobileChat = useCallback(() => {
+    setShowMobileChat(true);
+  }, []);
+
+  const closeMobileChat = useCallback(() => {
+    setShowMobileChat(false);
+  }, []);
+
   const openServer = openServerId ? (data?.servers || []).find(s => s.id === openServerId) : null;
 
   return {
@@ -165,5 +189,11 @@ export default function useGameState() {
     closeFirstDown,
     closeNewClient,
     closeBankruptWarning,
+    showPhoneCall,
+    phoneUnlocked: !!data?.phoneCallShown,
+    showMobileChat,
+    closePhoneCall,
+    openMobileChat,
+    closeMobileChat,
   };
 }

@@ -63,6 +63,15 @@ export async function endSession() {
   return res.json();
 }
 
+export async function sendChatMessage(message, chatHistory, gameContext) {
+  const res = await fetch(`${BASE}/ai/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...sessionHeaders() },
+    body: JSON.stringify({ message, chatHistory, gameContext }),
+  });
+  return res.json();
+}
+
 export async function fetchRanking({ page = 1, search = '' } = {}) {
   const params = new URLSearchParams({ page });
   if (search.trim()) params.set('search', search.trim());
