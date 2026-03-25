@@ -138,14 +138,12 @@ devops-disaster-simulator/
 ├── backend/
 │   ├── index.js                 # Entry point Express (puerto 3001)
 │   ├── routes/                  # Endpoints API REST
-│   │   └── ai.js                # Asistente IA Yamlito
 │   ├── lib/
 │   │   ├── core/                # Constantes, helpers, estado, logging
 │   │   ├── engine/              # Motor de simulación (ticks, drift, status)
 │   │   ├── game/                # Lógica de juego (acciones, clientes, eventos)
 │   │   ├── infra/               # Diagnósticos SSH
-│   │   ├── ai/
-│   │   │   └── openrouter.js    # Cliente OpenRouter + system prompt de Yamlito
+│   │   ├── ai/                  # Cliente OpenRouter + system prompt de Yamlito
 │   │   └── data/                # PostgreSQL, sesiones, seed
 │   ├── swagger.json             # OpenAPI docs
 │   └── package.json
