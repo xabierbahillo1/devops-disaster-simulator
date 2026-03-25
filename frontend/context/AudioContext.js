@@ -122,6 +122,21 @@ function buildSFX(ctx, dest) {
         tone('square', 660, t + d + 0.095, 0.08, 0.28);
       });
     },
+    'chat-open': () => {
+      const t = ctx.currentTime;
+      tone('triangle', 1047, t, 0.09, 0.14);
+      tone('triangle', 1319, t + 0.08, 0.09, 0.14);
+    },
+    'chat-send': () => {
+      const t = ctx.currentTime;
+      tone('sine', 660, t, 0.06, 0.13);
+      tone('sine', 880, t + 0.05, 0.05, 0.1);
+    },
+    'chat-receive': () => {
+      const t = ctx.currentTime;
+      tone('triangle', 880, t, 0.08, 0.12);
+      tone('triangle', 1047, t + 0.07, 0.1, 0.14);
+    },
   };
 }
 

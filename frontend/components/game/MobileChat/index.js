@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { sendChatMessage } from '../../../lib/api';
+import { useAudioSettings } from '../../../context/AudioContext';
 import ContactAvatar from './ContactAvatar';
 import MessageBubble from './MessageBubble';
 import TypingIndicator from './TypingIndicator';
@@ -35,18 +36,22 @@ export default function MobileChat({ isOpen, onClose, gameData, nickname }) {
   const welcomeSent  = useRef(false);
   const messagesEnd  = useRef(null);
   const inputRef     = useRef(null);
+  const { playSFX }  = useAudioSettings();
 
   const addMessage = useCallback((from, text) => {
     setMessages(prev => [...prev, { id: Date.now() + Math.random(), from, text, time: formatTime() }]);
   }, []);
 
-  // primer mensaje al abrir el chat
+  // sonido y primer mensaje al abrir el chat
   useEffect(() => {
-    if (isOpen && !welcomeSent.current) {
-      welcomeSent.current = true;
-      setTimeout(() => addMessage('ai', WELCOME_MESSAGE), 600);
+    if (isOpen) {
+      playSFX('chat-open');
+      if (!welcomeSent.current) {
+        welcomeSent.current = true;
+        setTimeout(() => addMessage('ai', WELCOME_MESSAGE), 600);
+      }
     }
-  }, [isOpen, addMessage]);
+  }, [isOpen, addMessage, playSFX]);
 
   // scroll al ultimo mensaje
   useEffect(() => {
@@ -71,12 +76,14 @@ export default function MobileChat({ isOpen, onClose, gameData, nickname }) {
     if (!text || loading) return;
 
     setInput('');
+    playSFX('chat-send');
     addMessage('user', text);
     setLoading(true);
 
     try {
       const history = messages.slice(-12).map(m => ({ from: m.from, text: m.text }));
       const { reply } = await sendChatMessage(text, history, buildGameContext(gameData));
+      playSFX('chat-receive');
       addMessage('ai', reply || 'No pude procesar eso. ¿Lo repites?');
     } catch {
       addMessage('ai', 'Uy, problemas de red por mi lado. Intentalo de nuevo. 📡');
@@ -84,7 +91,7 @@ export default function MobileChat({ isOpen, onClose, gameData, nickname }) {
       setLoading(false);
       setTimeout(() => inputRef.current?.focus(), 50);
     }
-  }, [input, loading, messages, addMessage, gameData]);
+  }, [input, loading, messages, addMessage, gameData, playSFX]);
 
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
