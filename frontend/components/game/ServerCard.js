@@ -30,7 +30,7 @@ export default function ServerCard({ server, onOpen }) {
       <div className="flex flex-col gap-1 p-2">
         {server.rebooting ? (
           <div style={{ color: '#ffaa00', fontSize: 11, textAlign: 'center', padding: '4px 0' }}>
-            ⟳ REINICIANDO...
+            <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> REINICIANDO...
           </div>
         ) : server.down ? (
           <div style={{ color: '#ff3366', fontSize: 11, textAlign: 'center', padding: '4px 0' }}>

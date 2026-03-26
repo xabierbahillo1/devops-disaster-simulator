@@ -6,7 +6,7 @@ export default function ConfirmDialog({ data, onConfirm, onCancel }) {
       background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)',
       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
     }} onClick={onCancel}>
-      <div onClick={(e) => e.stopPropagation()} style={{
+      <div className="confirm-dialog-enter" onClick={(e) => e.stopPropagation()} style={{
         background: '#0b1421', border: '1px solid #1e3048', borderRadius: 8,
         padding: 24, maxWidth: 420, width: '100%',
         boxShadow: '0 0 40px rgba(0,0,0,0.5)',

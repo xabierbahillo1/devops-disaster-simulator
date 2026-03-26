@@ -22,7 +22,7 @@ export default function InfraPanel({ servers, showBuyMenu, onToggleBuyMenu, onBu
             + Comprar
           </button>
           {showBuyMenu && (
-            <div style={{
+            <div className="buy-menu-dropdown" style={{
               position: 'absolute', top: '100%', right: 0, marginTop: 4, zIndex: 50,
               background: '#0b1421', border: '1px solid #1e3048', borderRadius: 6,
               padding: 6, minWidth: 160, boxShadow: '0 4px 20px rgba(0,0,0,0.5)',

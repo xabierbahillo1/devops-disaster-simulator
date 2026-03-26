@@ -14,7 +14,7 @@ export default function ActiveIncidents({ events, onOpenServer }) {
 
   return (
     <div className="panel flex flex-col">
-      <div className="panel-header">
+      <div className="panel-header panel-header-animated">
         <span style={{ color: '#ff3366' }}>⚠</span>
         Incidentes Activos
         <span style={{
@@ -27,7 +27,7 @@ export default function ActiveIncidents({ events, onOpenServer }) {
       </div>
       <div className="flex flex-col gap-1.5 p-2">
         {events.map(ev => (
-          <div key={ev.id} className="incident-card cursor-pointer"
+          <div key={ev.id} className={`incident-card incident-card-enter cursor-pointer ${ev.severity === 'critical' ? 'incident-critical' : ''}`}
             style={{ borderLeftColor: EVENT_BORDER[ev.type] || '#ffaa00' }}
             onClick={() => onOpenServer(ev.target)}
           >
