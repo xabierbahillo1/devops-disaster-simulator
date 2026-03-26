@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const expressWinston = require('express-winston');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./lib/core/swagger');
@@ -23,6 +24,8 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.set('trust proxy', 1);
+
+app.use(helmet());
 
 app.use(cors({
   origin: [
