@@ -5,6 +5,7 @@ const { createSession, getSession, removeSession } = require('../lib/data/sessio
 const { startSimulation } = require('../lib/engine/tick');
 const { createGame } = require('../lib/data/db');
 const { persistFinishedGame } = require('../lib/game/clients');
+const { sessionCreateLimiter } = require('../middleware/rateLimits');
 
 /**
  * @openapi
@@ -71,7 +72,7 @@ const { persistFinishedGame } = require('../lib/game/clients');
  *             schema:
  *               $ref: '#/components/schemas/Error401'
  */
-router.post('/', async (req, res) => {
+router.post('/', sessionCreateLimiter, async (req, res) => {
   const { nickname } = req.body;
   if (!nickname || !nickname.trim()) {
     return res.status(400).json({ success: false, message: 'Nickname requerido' });

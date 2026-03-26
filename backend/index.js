@@ -17,9 +17,12 @@ const unpauseRouter = require('./routes/unpause');
 const sshRouter = require('./routes/ssh');
 const rankingRouter = require('./routes/ranking');
 const aiRouter = require('./routes/ai');
+const { globalLimiter, aiLimiter } = require('./middleware/rateLimits');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+app.set('trust proxy', true);
 
 app.use(cors({
   origin: [
@@ -29,7 +32,10 @@ app.use(cors({
   methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'x-session-key'],
 }));
-app.use(express.json());
+
+app.use(express.json({ limit: '512kb' }));
+
+app.use(globalLimiter);
 
 // HTTP request logging (excluye /api/state para no saturar logs con polling)
 app.use(expressWinston.logger({
@@ -51,7 +57,7 @@ app.use('/api/reset', resetRouter);
 app.use('/api/unpause', unpauseRouter);
 app.use('/api/ssh', sshRouter);
 app.use('/api/ranking', rankingRouter);
-app.use('/api/ai', aiRouter);
+app.use('/api/ai', aiLimiter, aiRouter);
 
 // Error logging
 app.use(expressWinston.errorLogger({
