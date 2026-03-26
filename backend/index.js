@@ -64,6 +64,22 @@ app.use(expressWinston.errorLogger({
   winstonInstance: logger,
 }));
 
+// Error handler: captura errores
+app.use((err, req, res, next) => {
+  logger.error('Error no manejado', { error: err.message, stack: err.stack });
+  res.status(err.status || 500).json({
+    success: false,
+    message: process.env.NODE_ENV === 'production'
+      ? 'Error interno del servidor'
+      : err.message,
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: 'Ruta no encontrada' });
+});
+
 async function start() {
   try {
     await initDB();
