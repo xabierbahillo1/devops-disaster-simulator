@@ -104,6 +104,8 @@ function GamePageInner() {
   const gt  = data.gameTime || {};
   const fin = data.finance  || {};
 
+  const mentorActive = showIntro || showFirstDown || showNewClient || showBankruptWarning || showPhoneCall;
+
   const scaled = isMobile && scale < 1;
 
   const gameContent = (
@@ -169,11 +171,11 @@ function GamePageInner() {
         </div>
       </main>
 
-      {openServer && (
+      {openServer && !mentorActive && (
         <ServerModal server={openServer} onAction={actionWithSFX} onClose={() => setOpenServerId(null)} />
       )}
 
-      <ConfirmDialog data={confirmData} onConfirm={confirmWithSFX} onCancel={() => setConfirmData(null)} />
+      {!mentorActive && <ConfirmDialog data={confirmData} onConfirm={confirmWithSFX} onCancel={() => setConfirmData(null)} />}
 
       <GameOver
         reason={data.bankrupt ? 'bankrupt' : data.noClients ? 'no_clients' : null}
@@ -251,15 +253,17 @@ function GamePageInner() {
         />
       )}
 
-      <MobileChat
-        isOpen={showMobileChat}
-        onClose={closeMobileChat}
-        onAiMessage={handleAiMessage}
-        gameData={data}
-        nickname={nickname}
-      />
+      {!mentorActive && (
+        <MobileChat
+          isOpen={showMobileChat}
+          onClose={closeMobileChat}
+          onAiMessage={handleAiMessage}
+          gameData={data}
+          nickname={nickname}
+        />
+      )}
 
-      {resetConfirm && <ResetDialog onConfirm={handleReset} onCancel={() => setResetConfirm(false)} />}
+      {resetConfirm && !mentorActive && <ResetDialog onConfirm={handleReset} onCancel={() => setResetConfirm(false)} />}
 
       <ActionToast feedback={actionFeedback} />
     </div>
