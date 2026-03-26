@@ -80,6 +80,8 @@ router.post('/', sessionCreateLimiter, async (req, res) => {
 
   try {
     const trimmed = nickname.trim();
+    // Versión segura para logs
+    const safeNick = trimmed.replace(/[^\w\-_.]/g, '').substring(0, 30);
     const key = createSession(trimmed);
     const session = getSession(key);
 
@@ -88,7 +90,7 @@ router.post('/', sessionCreateLimiter, async (req, res) => {
     startSimulation(session);
     session.state._gameId = gameId;
 
-    logger.info('Sesión creada', { nickname: trimmed, gameId });
+    logger.info('Sesión creada', { nickname: safeNick, gameId });
     res.locals.nickname = trimmed;
     res.json({ success: true, sessionKey: key, nickname: trimmed });
   } catch (err) {

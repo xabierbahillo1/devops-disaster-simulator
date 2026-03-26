@@ -22,7 +22,7 @@ const { globalLimiter, aiLimiter } = require('./middleware/rateLimits');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.set('trust proxy', true);
+app.set('trust proxy', 1);
 
 app.use(cors({
   origin: [
@@ -43,7 +43,9 @@ app.use(expressWinston.logger({
   meta: true,
   requestWhitelist: [],
   responseWhitelist: [],
-  dynamicMeta: (req, res) => res.locals.nickname ? { nickname: res.locals.nickname } : {},
+  dynamicMeta: (req, res) => res.locals.nickname
+    ? { nickname: res.locals.nickname.replace(/[^\w\-_.]/g, '').substring(0, 30) }
+    : {},
   msg: 'HTTP {{req.method}} {{req.url}} {{res.statusCode}} {{res.responseTime}}ms',
   colorize: true,
   ignoreRoute: (req) => req.url === '/api/state' || req.url.startsWith('/api-docs'),
