@@ -46,9 +46,12 @@ app.use(expressWinston.logger({
   meta: true,
   requestWhitelist: [],
   responseWhitelist: [],
-  dynamicMeta: (req, res) => res.locals.nickname
-    ? { nickname: res.locals.nickname.replace(/[^\w\-_.]/g, '').substring(0, 30) }
-    : {},
+  dynamicMeta: (req, res) => ({
+    ip: req.ip,
+    ...(res.locals.nickname && {
+      nickname: res.locals.nickname.replace(/[^\w\-_.]/g, '').substring(0, 30),
+    }),
+  }),
   msg: 'HTTP {{req.method}} {{req.url}} {{res.statusCode}} {{res.responseTime}}ms',
   colorize: true,
   ignoreRoute: (req) => req.url === '/api/state' || req.url.startsWith('/api-docs'),
