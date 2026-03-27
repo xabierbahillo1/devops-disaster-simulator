@@ -1,6 +1,6 @@
 'use strict';
 
-const MODEL = 'stepfun/step-3.5-flash:free';
+const MODEL = 'openrouter/free';
 
 function buildSystemPrompt(gameContext) {
   const nickname = gameContext.nickname || 'tío';
