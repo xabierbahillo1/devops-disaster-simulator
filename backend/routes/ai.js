@@ -3,7 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const { requireSession } = require('../middleware/session');
-const { chatWithAI } = require('../lib/ai/openrouter');
+const { chatWithAIRetry } = require('../lib/ai/openrouter');
 const logger = require('../lib/core/logger');
 
 /**
@@ -57,7 +57,7 @@ router.post('/chat', requireSession, async (req, res) => {
       nickname: req.gameState.nickname,
     };
 
-    const reply = await chatWithAI(message.trim(), chatHistory || [], context);
+    const reply = await chatWithAIRetry(message.trim(), chatHistory || [], context);
     res.json({ reply });
   } catch (err) {
     logger.error('Error en AI chat', { error: err.message });
