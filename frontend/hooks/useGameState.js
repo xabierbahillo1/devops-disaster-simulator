@@ -34,6 +34,7 @@ export default function useGameState() {
   const [showPhoneCall, setShowPhoneCall]   = useState(false);
   const [showMobileChat, setShowMobileChat] = useState(false);
   const [hasUnread, setHasUnread]           = useState(false);
+  const [chatMessages, setChatMessages]     = useState([]);
   const firstDownHandled = useRef(false);
   const newClientHandled = useRef(false);
   const bankruptWarningHandled = useRef(false);
@@ -169,6 +170,14 @@ export default function useGameState() {
     setHasUnread(true);
   }, []);
 
+  const addChatMessage = useCallback((from, text, time) => {
+    setChatMessages(prev => [...prev, { id: Date.now() + Math.random(), from, text, time }]);
+  }, []);
+
+  const clearChatMessages = useCallback(() => {
+    setChatMessages([]);
+  }, []);
+
   const openServer = openServerId ? (data?.servers || []).find(s => s.id === openServerId) : null;
 
   return {
@@ -204,5 +213,8 @@ export default function useGameState() {
     closePhoneCall,
     openMobileChat,
     closeMobileChat,
+    chatMessages,
+    addChatMessage,
+    clearChatMessages,
   };
 }

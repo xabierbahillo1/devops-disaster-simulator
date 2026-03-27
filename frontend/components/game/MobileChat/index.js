@@ -29,34 +29,31 @@ function buildGameContext(gameData) {
   };
 }
 
-export default function MobileChat({ isOpen, onClose, onAiMessage, gameData, nickname }) {
-  const [messages, setMessages]   = useState([]);
+export default function MobileChat({ isOpen, onClose, onAiMessage, gameData, nickname, messages = [], onAddMessage }) {
   const [input, setInput]         = useState('');
   const [loading, setLoading]     = useState(false);
-  const welcomeSent  = useRef(false);
   const messagesEnd  = useRef(null);
   const inputRef     = useRef(null);
   const { playSFX }  = useAudioSettings();
 
   const addMessage = useCallback((from, text) => {
-    setMessages(prev => [...prev, { id: Date.now() + Math.random(), from, text, time: formatGameTime(gameData?.gameTime) }]);
-  }, [gameData?.gameTime]);
+    onAddMessage?.(from, text, formatGameTime(gameData?.gameTime));
+  }, [gameData?.gameTime, onAddMessage]);
 
   // sonido y primer mensaje al abrir el chat
   useEffect(() => {
     if (isOpen) {
       playSFX('chat-open');
-      if (!welcomeSent.current) {
-        welcomeSent.current = true;
+      if (messages.length === 0) {
         setTimeout(() => addMessage('ai', WELCOME_MESSAGE), 600);
       }
     }
-  }, [isOpen, addMessage, playSFX]);
+  }, [isOpen, messages.length, addMessage, playSFX]);
 
   // scroll al ultimo mensaje
   useEffect(() => {
     messagesEnd.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, loading]);
+  }, [messages, loading, isOpen]);
 
   // foco al textarea al abrir
   useEffect(() => {

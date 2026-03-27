@@ -42,6 +42,7 @@ function GamePageInner() {
     closeIntro, closeFirstDown, closeNewClient, closeBankruptWarning,
     showPhoneCall, phoneUnlocked, hasUnread, markUnread, showMobileChat,
     closePhoneCall, openMobileChat, closeMobileChat,
+    chatMessages, addChatMessage, clearChatMessages,
   } = useGameState();
 
   const { setMusicState, playSFX } = useAudioSettings();
@@ -260,6 +261,8 @@ function GamePageInner() {
           onAiMessage={handleAiMessage}
           gameData={data}
           nickname={nickname}
+          messages={chatMessages}
+          onAddMessage={addChatMessage}
         />
       )}
 
