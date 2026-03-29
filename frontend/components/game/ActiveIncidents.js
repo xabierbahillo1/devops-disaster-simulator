@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { EVENT_ICON, EVENT_BORDER } from '../../constants/events';
 
 export default function ActiveIncidents({ events, onOpenServer }) {
+  const [collapsed, setCollapsed] = useState(false);
   const [order, setOrder] = useState([]);
   const [dragIndex, setDragIndex] = useState(null);
   const [overIndex, setOverIndex] = useState(null);
@@ -64,7 +65,6 @@ export default function ActiveIncidents({ events, onOpenServer }) {
     setDragIndex(null);
     setOverIndex(null);
   };
-
   const handleDragEnd = () => {
     dragItem.current = null;
     dragOverItem.current = null;
@@ -74,7 +74,10 @@ export default function ActiveIncidents({ events, onOpenServer }) {
 
   return (
     <div className="panel flex flex-col">
-      <div className="panel-header panel-header-animated">
+      <div
+        className="panel-header panel-header-animated panel-header--clickable"
+        onClick={() => setCollapsed(c => !c)}
+      >
         <span style={{ color: '#ff3366' }}>⚠</span>
         Incidentes Activos
         <span style={{
@@ -84,52 +87,57 @@ export default function ActiveIncidents({ events, onOpenServer }) {
         }}>
           {events.length}
         </span>
+        <span className={`panel-chevron${collapsed ? ' panel-chevron--collapsed' : ''}`}>›</span>
       </div>
-      <div className="flex flex-col gap-1.5 p-2">
-        {orderedEvents.map((ev, index) => (
-          <div
-            key={ev.id}
-            draggable
-            onDragStart={() => handleDragStart(index)}
-            onDragEnter={() => handleDragEnter(index)}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={handleDrop}
-            onDragEnd={handleDragEnd}
-            onClick={() => { if (!didDrag.current) onOpenServer(ev.target); didDrag.current = false; }}
-            className={[
-              `incident-card incident-card-enter cursor-pointer`,
-              ev.severity === 'critical' ? 'incident-critical' : '',
-              'infra-drag-item',
-              dragIndex === index ? 'infra-drag-item--dragging' : '',
-              overIndex === index && dragIndex !== index ? 'infra-drag-item--over' : '',
-            ].join(' ')}
-            style={{ borderLeftColor: EVENT_BORDER[ev.type] || '#ffaa00' }}
-          >
-            <div className="flex items-start gap-2">
-              <span style={{ fontSize: 14 }}>{EVENT_ICON[ev.type] || '⚠'}</span>
-              <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
+      <div className={`panel-collapsible${collapsed ? ' panel-collapsible--collapsed' : ''}`}>
+        <div className="panel-collapsible-inner">
+          <div className="flex flex-col gap-1.5 p-2">
+            {orderedEvents.map((ev, index) => (
+              <div
+                key={ev.id}
+                draggable
+                onDragStart={() => handleDragStart(index)}
+                onDragEnter={() => handleDragEnter(index)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handleDrop}
+                onDragEnd={handleDragEnd}
+                onClick={() => { if (!didDrag.current) onOpenServer(ev.target); didDrag.current = false; }}
+                className={[
+                  'incident-card incident-card-enter cursor-pointer',
+                  ev.severity === 'critical' ? 'incident-critical' : '',
+                  'infra-drag-item',
+                  dragIndex === index ? 'infra-drag-item--dragging' : '',
+                  overIndex === index && dragIndex !== index ? 'infra-drag-item--over' : '',
+                ].join(' ')}
+                style={{ borderLeftColor: EVENT_BORDER[ev.type] || '#ffaa00' }}
+              >
+                <div className="flex items-start gap-2">
+                  <span style={{ fontSize: 14 }}>{EVENT_ICON[ev.type] || '⚠'}</span>
+                  <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span style={{
+                        fontFamily: 'Orbitron, monospace', fontSize: 10,
+                        color: EVENT_BORDER[ev.type] || '#ffaa00', letterSpacing: '0.08em',
+                      }}>
+                        ALERTA
+                      </span>
+                      <span style={{ fontSize: 11, color: '#7090b0' }}>→ {ev.targetName}</span>
+                    </div>
+                    <p style={{ fontSize: 11, color: '#8090b0', margin: 0, lineHeight: 1.4 }}>
+                      {ev.msg}
+                    </p>
+                  </div>
                   <span style={{
-                    fontFamily: 'Orbitron, monospace', fontSize: 10,
-                    color: EVENT_BORDER[ev.type] || '#ffaa00', letterSpacing: '0.08em',
+                    fontSize: 9, color: '#5a7898', fontFamily: 'Orbitron, monospace',
+                    letterSpacing: '0.06em', flexShrink: 0,
                   }}>
-                    ALERTA
+                    INVESTIGAR ▸
                   </span>
-                  <span style={{ fontSize: 11, color: '#7090b0' }}>→ {ev.targetName}</span>
                 </div>
-                <p style={{ fontSize: 11, color: '#8090b0', margin: 0, lineHeight: 1.4 }}>
-                  {ev.msg}
-                </p>
               </div>
-              <span style={{
-                fontSize: 9, color: '#5a7898', fontFamily: 'Orbitron, monospace',
-                letterSpacing: '0.06em', flexShrink: 0,
-              }}>
-                INVESTIGAR ▸
-              </span>
-            </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
     </div>
   );

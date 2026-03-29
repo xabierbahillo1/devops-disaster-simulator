@@ -85,6 +85,7 @@ function ServerMiniChart({ server, history }) {
 }
 
 export default function MetricsChart({ servers, history = {} }) {
+  const [collapsed, setCollapsed] = useState(false);
   const [order, setOrder] = useState([]);
   const [dragIndex, setDragIndex] = useState(null);
   const [overIndex, setOverIndex] = useState(null);
@@ -122,7 +123,6 @@ export default function MetricsChart({ servers, history = {} }) {
     dragOverItem.current = index;
     setOverIndex(index);
   };
-
   const handleDrop = () => {
     const from = dragItem.current;
     const to = dragOverItem.current;
@@ -142,7 +142,7 @@ export default function MetricsChart({ servers, history = {} }) {
     setDragIndex(null);
     setOverIndex(null);
   };
-
+  
   const handleDragEnd = () => {
     dragItem.current = null;
     dragOverItem.current = null;
@@ -152,33 +152,41 @@ export default function MetricsChart({ servers, history = {} }) {
 
   return (
     <div className="panel flex flex-col">
-      <div className="panel-header">
+      <div
+        className="panel-header panel-header--clickable"
+        onClick={() => setCollapsed(c => !c)}
+      >
         <svg width="10" height="10" viewBox="0 0 10 10">
           <circle cx="5" cy="5" r="4" fill="none" stroke="#00c8ff" strokeWidth="1" />
           <circle cx="5" cy="5" r="2" fill="#00c8ff" />
         </svg>
         Métricas en Tiempo Real
         <span className="ml-auto text-neon animate-blink" style={{ fontSize: 10 }}>● EN VIVO</span>
+        <span className={`panel-chevron${collapsed ? ' panel-chevron--collapsed' : ''}`}>›</span>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2">
-        {orderedServers.map((server, index) => (
-          <div
-            key={server.id}
-            draggable
-            onDragStart={() => handleDragStart(index)}
-            onDragEnter={() => handleDragEnter(index)}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={handleDrop}
-            onDragEnd={handleDragEnd}
-            className={[
-              'infra-drag-item',
-              dragIndex === index ? 'infra-drag-item--dragging' : '',
-              overIndex === index && dragIndex !== index ? 'infra-drag-item--over' : '',
-            ].join(' ')}
-          >
-            <ServerMiniChart server={server} history={history[server.id]} />
+      <div className={`panel-collapsible${collapsed ? ' panel-collapsible--collapsed' : ''}`}>
+        <div className="panel-collapsible-inner">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2">
+            {orderedServers.map((server, index) => (
+              <div
+                key={server.id}
+                draggable
+                onDragStart={() => handleDragStart(index)}
+                onDragEnter={() => handleDragEnter(index)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handleDrop}
+                onDragEnd={handleDragEnd}
+                className={[
+                  'infra-drag-item',
+                  dragIndex === index ? 'infra-drag-item--dragging' : '',
+                  overIndex === index && dragIndex !== index ? 'infra-drag-item--over' : '',
+                ].join(' ')}
+              >
+                <ServerMiniChart server={server} history={history[server.id]} />
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
     </div>
   );

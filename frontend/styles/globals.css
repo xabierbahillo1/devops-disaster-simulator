@@ -346,6 +346,42 @@ html, body {
   .game-hud-bar .hud-value { font-size: 14px; }
 }
 
+/* Collapse de paneles */
+.panel-header--clickable {
+  cursor: pointer;
+  user-select: none;
+}
+.panel-header--clickable:hover {
+  background: #0d1f32;
+}
+.panel-chevron {
+  flex-shrink: 0;
+  margin-left: 6px;
+  font-size: 11px;
+  color: #4a6880;
+  line-height: 1;
+  transition: transform 0.22s ease, color 0.15s;
+  transform: rotate(90deg);
+}
+.panel-chevron--collapsed {
+  transform: rotate(-90deg);
+}
+.panel-header--clickable:hover .panel-chevron {
+  color: #7090b0;
+}
+.panel-collapsible {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.22s ease;
+}
+.panel-collapsible--collapsed {
+  grid-template-rows: 0fr;
+}
+.panel-collapsible-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
 /* Drag & drop servidores */
 .infra-drag-item {
   cursor: grab;

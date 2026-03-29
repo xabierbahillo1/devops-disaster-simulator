@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const LEVEL_STYLE = {
   critical: { color: '#ff3366', prefix: '[CRIT]' },
@@ -11,6 +11,7 @@ const LEVEL_STYLE = {
 
 export default function LogPanel({ logs = [] }) {
   const containerRef = useRef(null);
+  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     if (containerRef.current) containerRef.current.scrollTop = 0;
@@ -18,42 +19,50 @@ export default function LogPanel({ logs = [] }) {
 
   return (
     <div className="panel flex flex-col flex-1 overflow-hidden min-h-0">
-      <div className="panel-header">
+      <div
+        className="panel-header panel-header--clickable"
+        onClick={() => setCollapsed(c => !c)}
+      >
         <span style={{ color: '#00c8ff' }}>▸</span>
         Registro de Eventos
         <span style={{ fontSize: 10, color: '#4a6880', marginLeft: 'auto' }}>
           {logs.length} entradas
         </span>
+        <span className={`panel-chevron${collapsed ? ' panel-chevron--collapsed' : ''}`}>›</span>
       </div>
 
-      <div
-        ref={containerRef}
-        className="flex-1 overflow-y-auto p-2 flex flex-col gap-0.5"
-        style={{ minHeight: 0 }}
-      >
-        {logs.length === 0 && (
-          <div style={{ fontSize: 11, color: '#4a6880', padding: '8px 4px' }}>
-            Sin eventos aún...
+      <div className={`panel-collapsible${collapsed ? ' panel-collapsible--collapsed' : ''} flex-1 min-h-0`}>
+        <div className="panel-collapsible-inner h-full">
+          <div
+            ref={containerRef}
+            className="flex-1 overflow-y-auto p-2 flex flex-col gap-0.5"
+            style={{ minHeight: 0 }}
+          >
+            {logs.length === 0 && (
+              <div style={{ fontSize: 11, color: '#4a6880', padding: '8px 4px' }}>
+                Sin eventos aún...
+              </div>
+            )}
+            {logs.map((entry) => {
+              const style = LEVEL_STYLE[entry.level] || LEVEL_STYLE.info;
+              return (
+                <div key={entry.id} className="log-entry flex gap-2"
+                  style={{ fontSize: 11, lineHeight: '1.6', alignItems: 'flex-start' }}
+                >
+                  <span style={{ color: '#4a6880', flexShrink: 0, userSelect: 'none', whiteSpace: 'nowrap' }}>
+                    {entry.gameTime || '--'}
+                  </span>
+                  <span style={{ color: style.color, flexShrink: 0, userSelect: 'none' }}>
+                    {style.prefix}
+                  </span>
+                  <span style={{ color: entry.level === 'info' ? '#8090b0' : '#c8dcea', wordBreak: 'break-word' }}>
+                    {entry.message}
+                  </span>
+                </div>
+              );
+            })}
           </div>
-        )}
-        {logs.map((entry) => {
-          const style = LEVEL_STYLE[entry.level] || LEVEL_STYLE.info;
-          return (
-            <div key={entry.id} className="log-entry flex gap-2"
-              style={{ fontSize: 11, lineHeight: '1.6', alignItems: 'flex-start' }}
-            >
-              <span style={{ color: '#4a6880', flexShrink: 0, userSelect: 'none', whiteSpace: 'nowrap' }}>
-                {entry.gameTime || '--'}
-              </span>
-              <span style={{ color: style.color, flexShrink: 0, userSelect: 'none' }}>
-                {style.prefix}
-              </span>
-              <span style={{ color: entry.level === 'info' ? '#8090b0' : '#c8dcea', wordBreak: 'break-word' }}>
-                {entry.message}
-              </span>
-            </div>
-          );
-        })}
+        </div>
       </div>
     </div>
   );
