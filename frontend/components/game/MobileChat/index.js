@@ -34,6 +34,7 @@ export default function MobileChat({ isOpen, onClose, onAiMessage, gameData, nic
   const [loading, setLoading]     = useState(false);
   const messagesEnd  = useRef(null);
   const inputRef     = useRef(null);
+  const welcomeAddedRef = useRef(false);
   const { playSFX }  = useAudioSettings();
 
   const addMessage = useCallback((from, text) => {
@@ -44,9 +45,13 @@ export default function MobileChat({ isOpen, onClose, onAiMessage, gameData, nic
   useEffect(() => {
     if (isOpen) {
       playSFX('chat-open');
-      if (messages.length === 0) {
+      if (messages.length === 0 && !welcomeAddedRef.current) {
+        welcomeAddedRef.current = true;
         setTimeout(() => addMessage('ai', WELCOME_MESSAGE), 600);
       }
+    } else {
+      // Resetear el flag cuando se cierra el chat
+      welcomeAddedRef.current = false;
     }
   }, [isOpen, messages.length, addMessage, playSFX]);
 
