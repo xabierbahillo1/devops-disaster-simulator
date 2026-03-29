@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect, useRef } from 'react';
 import ServerCard from './ServerCard';
 
 const SERVER_TYPES = [
@@ -8,7 +9,74 @@ const SERVER_TYPES = [
   { type: 'database', label: 'Base de Datos',   icon: '◉' },
 ];
 
+const STORAGE_KEY = 'infra-server-order';
+
 export default function InfraPanel({ servers, showBuyMenu, onToggleBuyMenu, onBuyServer, onOpenServer }) {
+  const [order, setOrder] = useState([]);
+  const [dragIndex, setDragIndex] = useState(null);
+  const [overIndex, setOverIndex] = useState(null);
+  const dragItem = useRef(null);
+  const dragOverItem = useRef(null);
+
+  useEffect(() => {
+    if (!servers) return;
+    setOrder(prev => {
+      const existingIds = new Set(servers.map(s => s.id));
+      const saved = (() => {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
+      })();
+      const base = saved.length ? saved : prev;
+      const kept = base.filter(id => existingIds.has(id));
+      const newIds = servers.map(s => s.id).filter(id => !kept.includes(id));
+      return [...kept, ...newIds];
+    });
+  }, [servers]);
+
+  useEffect(() => {
+    if (order.length) localStorage.setItem(STORAGE_KEY, JSON.stringify(order));
+  }, [order]);
+
+  const orderedServers = order
+    .map(id => (servers || []).find(s => s.id === id))
+    .filter(Boolean);
+
+  const handleDragStart = (index) => {
+    dragItem.current = index;
+    setDragIndex(index);
+  };
+
+  const handleDragEnter = (index) => {
+    dragOverItem.current = index;
+    setOverIndex(index);
+  };
+
+  const handleDrop = () => {
+    const from = dragItem.current;
+    const to = dragOverItem.current;
+    if (from === null || to === null || from === to) {
+      setDragIndex(null);
+      setOverIndex(null);
+      return;
+    }
+    setOrder(prev => {
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+    dragItem.current = null;
+    dragOverItem.current = null;
+    setDragIndex(null);
+    setOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    dragItem.current = null;
+    dragOverItem.current = null;
+    setDragIndex(null);
+    setOverIndex(null);
+  };
+
   return (
     <div className="flex flex-col gap-2 xl:overflow-hidden" data-zone="servers">
       <div className="flex items-center" style={{ paddingLeft: 4, paddingBottom: 2 }}>
@@ -46,8 +114,23 @@ export default function InfraPanel({ servers, showBuyMenu, onToggleBuyMenu, onBu
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-2 xl:flex xl:flex-col xl:overflow-auto">
-        {(servers || []).map(server => (
-          <ServerCard key={server.id} server={server} onOpen={onOpenServer} />
+        {orderedServers.map((server, index) => (
+          <div
+            key={server.id}
+            draggable
+            onDragStart={() => handleDragStart(index)}
+            onDragEnter={() => handleDragEnter(index)}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleDrop}
+            onDragEnd={handleDragEnd}
+            className={[
+              'infra-drag-item',
+              dragIndex === index ? 'infra-drag-item--dragging' : '',
+              overIndex === index && dragIndex !== index ? 'infra-drag-item--over' : '',
+            ].join(' ')}
+          >
+            <ServerCard server={server} onOpen={onOpenServer} />
+          </div>
         ))}
       </div>
     </div>

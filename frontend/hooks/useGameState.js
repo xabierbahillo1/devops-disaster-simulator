@@ -126,6 +126,8 @@ export default function useGameState() {
     setResetConfirm(false);
     await endSession().catch(() => {});
     localStorage.removeItem('playerNick');
+    localStorage.removeItem('infra-server-order');
+    localStorage.removeItem('metrics-server-order');
     sessionStorage.removeItem('introSeen');
     sessionStorage.removeItem('sessionKey');
     router.push('/');

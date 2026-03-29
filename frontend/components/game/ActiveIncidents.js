@@ -1,6 +1,26 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
 import { EVENT_ICON, EVENT_BORDER } from '../../constants/events';
 
 export default function ActiveIncidents({ events, onOpenServer }) {
+  const [order, setOrder] = useState([]);
+  const [dragIndex, setDragIndex] = useState(null);
+  const [overIndex, setOverIndex] = useState(null);
+  const dragItem = useRef(null);
+  const dragOverItem = useRef(null);
+  const didDrag = useRef(false);
+
+  useEffect(() => {
+    if (!events) return;
+    setOrder(prev => {
+      const existingIds = new Set(events.map(e => e.id));
+      const kept = prev.filter(id => existingIds.has(id));
+      const newIds = events.map(e => e.id).filter(id => !kept.includes(id));
+      return [...kept, ...newIds];
+    });
+  }, [events]);
+
   if (!events || events.length === 0) {
     return (
       <div className="panel flex items-center justify-center gap-2" style={{ padding: '14px', minHeight: 56 }}>
@@ -11,6 +31,46 @@ export default function ActiveIncidents({ events, onOpenServer }) {
       </div>
     );
   }
+
+  const orderedEvents = order
+    .map(id => events.find(e => e.id === id))
+    .filter(Boolean);
+
+  const handleDragStart = (index) => {
+    dragItem.current = index;
+    didDrag.current = false;
+    setDragIndex(index);
+  };
+
+  const handleDragEnter = (index) => {
+    dragOverItem.current = index;
+    setOverIndex(index);
+  };
+
+  const handleDrop = () => {
+    const from = dragItem.current;
+    const to = dragOverItem.current;
+    if (from !== null && to !== null && from !== to) {
+      didDrag.current = true;
+      setOrder(prev => {
+        const next = [...prev];
+        const [moved] = next.splice(from, 1);
+        next.splice(to, 0, moved);
+        return next;
+      });
+    }
+    dragItem.current = null;
+    dragOverItem.current = null;
+    setDragIndex(null);
+    setOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    dragItem.current = null;
+    dragOverItem.current = null;
+    setDragIndex(null);
+    setOverIndex(null);
+  };
 
   return (
     <div className="panel flex flex-col">
@@ -26,10 +86,24 @@ export default function ActiveIncidents({ events, onOpenServer }) {
         </span>
       </div>
       <div className="flex flex-col gap-1.5 p-2">
-        {events.map(ev => (
-          <div key={ev.id} className={`incident-card incident-card-enter cursor-pointer ${ev.severity === 'critical' ? 'incident-critical' : ''}`}
+        {orderedEvents.map((ev, index) => (
+          <div
+            key={ev.id}
+            draggable
+            onDragStart={() => handleDragStart(index)}
+            onDragEnter={() => handleDragEnter(index)}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleDrop}
+            onDragEnd={handleDragEnd}
+            onClick={() => { if (!didDrag.current) onOpenServer(ev.target); didDrag.current = false; }}
+            className={[
+              `incident-card incident-card-enter cursor-pointer`,
+              ev.severity === 'critical' ? 'incident-critical' : '',
+              'infra-drag-item',
+              dragIndex === index ? 'infra-drag-item--dragging' : '',
+              overIndex === index && dragIndex !== index ? 'infra-drag-item--over' : '',
+            ].join(' ')}
             style={{ borderLeftColor: EVENT_BORDER[ev.type] || '#ffaa00' }}
-            onClick={() => onOpenServer(ev.target)}
           >
             <div className="flex items-start gap-2">
               <span style={{ fontSize: 14 }}>{EVENT_ICON[ev.type] || '⚠'}</span>

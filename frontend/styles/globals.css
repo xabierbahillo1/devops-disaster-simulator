@@ -346,6 +346,36 @@ html, body {
   .game-hud-bar .hud-value { font-size: 14px; }
 }
 
+/* Drag & drop servidores */
+.infra-drag-item {
+  cursor: grab;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.infra-drag-item:active {
+  cursor: grabbing;
+}
+.infra-drag-item--dragging {
+  opacity: 0.35;
+}
+.infra-drag-item--over {
+  transform: translateY(-2px);
+  outline: 1px solid #1e5080;
+  border-radius: 6px;
+}
+
+.infra-drag-item .panel,
+.infra-drag-item .incident-card {
+  transition: border-color 0.2s, background 0.2s;
+}
+.infra-drag-item:hover .panel {
+  border-color: #00c8ff26;
+  background: #0c1826;
+}
+.infra-drag-item.incident-card:hover {
+  border-color: #00c8ff26;
+  background: #0e1f30;
+}
+
 /* Modal de servidor */
 .server-modal-overlay {
   position: fixed;
