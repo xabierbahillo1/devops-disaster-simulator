@@ -3,6 +3,10 @@
 import { useState } from 'react';
 import { CPU_OPTIONS, RAM_OPTIONS, DISK_OPTIONS, COST_VCPU, COST_RAM, COST_DISK } from '../../../constants/server';
 
+function fmtDisk(gb) {
+  return gb >= 1000 ? `${gb / 1000} TB` : `${gb}`;
+}
+
 export default function ScalePanel({ server, onScale }) {
   const [cores, setCores] = useState(server.specs.cpuCores);
   const [ram, setRam]     = useState(server.specs.ramGB);
@@ -51,10 +55,10 @@ export default function ScalePanel({ server, onScale }) {
               className={`btn-resource ${v === disk ? 'active' : ''}`}
               disabled={v < Math.ceil(server.usage.diskUsedGB) + 1}
               style={v < Math.ceil(server.usage.diskUsedGB) + 1 ? { opacity: 0.3 } : {}}
-            >{v}</button>
+            >{fmtDisk(v)}</button>
           ))}
         </div>
-        <span style={{ fontSize: 10, color: '#7090b0', marginLeft: 'auto' }}>GB</span>
+        <span style={{ fontSize: 10, color: '#7090b0', marginLeft: 'auto' }}>{disk >= 1000 ? 'TB' : 'GB'}</span>
       </div>
 
       <div style={{ fontSize: 11, color: '#8090b0', marginBottom: 8, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>

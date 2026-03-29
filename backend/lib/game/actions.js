@@ -44,8 +44,8 @@ function handleScale(state, targetId, params) {
 
   const needsReboot = newCores !== server.specs.cpuCores || newRam !== server.specs.ramGB;
 
-  const coreJumps = Math.abs(newCores - server.specs.cpuCores);
-  const ramJumps = Math.abs(newRam - server.specs.ramGB);
+  const coreSteps = Math.abs(Math.log2(Math.max(newCores, 1)) - Math.log2(Math.max(server.specs.cpuCores, 1)));
+  const ramSteps  = Math.abs(Math.log2(Math.max(newRam, 1))   - Math.log2(Math.max(server.specs.ramGB, 1)));
 
   server.specs.cpuCores = newCores;
   server.specs.ramGB = newRam;
@@ -55,8 +55,8 @@ function handleScale(state, targetId, params) {
   if (needsReboot && !server.rebooting) {
     server.rebooting = true;
     server.down = true;
-    server.rebootTicksLeft = coreJumps + ramJumps > 8 ? 2 : 1;
-    server._scaleInstabilityTicks = Math.floor((coreJumps + ramJumps) / 2) + 1;
+    server.rebootTicksLeft = coreSteps + ramSteps > 4 ? 2 : 1;
+    server._scaleInstabilityTicks = Math.round(coreSteps + ramSteps) + 1;
     addLog(state, `[ESCALADO] ${server.name}: ${oldSpecs.cpuCores}→${newCores} vCPU, ${oldSpecs.ramGB}→${newRam} GB RAM, ${oldSpecs.diskGB}→${server.specs.diskGB} GB disco — reiniciando`, 'info');
   } else {
     addLog(state, `[ESCALADO] ${server.name}: disco ampliado a ${server.specs.diskGB} GB`, 'info');

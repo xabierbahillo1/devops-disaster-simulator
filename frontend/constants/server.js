@@ -4,9 +4,9 @@ export const TYPE_ICON = {
   database: '◉',
 };
 
-export const CPU_OPTIONS  = [1, 2, 4, 8, 16];
-export const RAM_OPTIONS  = [1, 2, 4, 8, 16, 32, 64];
-export const DISK_OPTIONS = [20, 50, 100, 200, 500];
+export const CPU_OPTIONS  = [1, 2, 4, 8, 16, 32, 48, 64, 96];
+export const RAM_OPTIONS  = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512];
+export const DISK_OPTIONS = [20, 50, 100, 200, 500, 1000, 2000, 4000, 8000];
 
 export const COST_VCPU = 0.25;
 export const COST_RAM  = 0.15;
