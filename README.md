@@ -185,7 +185,7 @@ El backend expone una API REST documentada con Swagger en `/api-docs`:
 
 ## 🌐 ¿Cómo Utiliza Este Proyecto CubePath?
 
-Este proyecto está completamente desplegado en una **VPS `gp.nano` de CubePath** (1 vCPU, 2 GB RAM, 40 GB SSD, 3 TB ancho de banda) con **Dokploy**, una plataforma que simplifica el despliegue en producción.
+Este proyecto está completamente desplegado en una **VPS `gp.micro` de CubePath** (2 vCPU, 4 GB RAM, 80 GB SSD, 5 TB ancho de banda) con **Dokploy**, una plataforma que simplifica el despliegue en producción.
 
 **Arquitectura:**
 - 3 contenedores Docker: Frontend (Next.js), Backend (Express) y PostgreSQL 18
