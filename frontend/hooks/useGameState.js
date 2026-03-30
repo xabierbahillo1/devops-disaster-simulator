@@ -125,12 +125,14 @@ export default function useGameState() {
   const handleReset = useCallback(async () => {
     setResetConfirm(false);
     await endSession().catch(() => {});
+    const nick = localStorage.getItem('playerNick') || '';
     localStorage.removeItem('playerNick');
     localStorage.removeItem('infra-server-order');
     localStorage.removeItem('metrics-server-order');
     sessionStorage.removeItem('introSeen');
     sessionStorage.removeItem('sessionKey');
-    router.push('/');
+    const encoded = encodeURIComponent(btoa(nick));
+    router.push(`/?r=${encoded}`);
   }, [router]);
 
   const closeIntro = useCallback(() => {

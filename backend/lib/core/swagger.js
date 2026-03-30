@@ -41,6 +41,7 @@ const options = {
       { name: 'Control', description: 'Control de la simulación (reset, pause)' },
       { name: 'Diagnóstico', description: 'Diagnóstico SSH de servidores' },
       { name: 'Ranking', description: 'Ranking de partidas terminadas (persistido en PostgreSQL)' },
+      { name: 'Reviews', description: 'Valoraciones de usuarios' },
     ],
   },
   apis: ['./routes/*.js'],

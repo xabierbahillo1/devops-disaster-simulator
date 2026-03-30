@@ -18,6 +18,7 @@ const unpauseRouter = require('./routes/unpause');
 const sshRouter = require('./routes/ssh');
 const rankingRouter = require('./routes/ranking');
 const aiRouter = require('./routes/ai');
+const reviewRouter = require('./routes/review');
 const { globalLimiter, aiLimiter } = require('./middleware/rateLimits');
 
 const app = express();
@@ -66,6 +67,7 @@ app.use('/api/unpause', unpauseRouter);
 app.use('/api/ssh', sshRouter);
 app.use('/api/ranking', rankingRouter);
 app.use('/api/ai', aiLimiter, aiRouter);
+app.use('/api/review', reviewRouter);
 
 // Error logging
 app.use(expressWinston.errorLogger({

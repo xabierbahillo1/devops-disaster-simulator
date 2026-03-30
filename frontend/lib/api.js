@@ -78,3 +78,23 @@ export async function fetchRanking({ page = 1, search = '' } = {}) {
   const res = await fetch(`${BASE}/ranking?${params}`);
   return res.json();
 }
+
+export async function fetchReviews({ page = 1, filter = 'all' } = {}) {
+  const params = new URLSearchParams({ page, filter });
+  const res = await fetch(`${BASE}/review?${params}`);
+  return res.json();
+}
+
+export async function checkCanReview() {
+  const res = await fetch(`${BASE}/review/can-review`);
+  return res.json();
+}
+
+export async function submitReview({ sessionId, nickname, recommended, comment }) {
+  const res = await fetch(`${BASE}/review`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId, nickname, recommended, comment }),
+  });
+  return res.json();
+}

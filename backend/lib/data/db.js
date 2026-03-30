@@ -46,6 +46,22 @@ async function initDB() {
     await client.query(`CREATE INDEX IF NOT EXISTS idx_games_session_key ON games(session_key) WHERE session_key IS NOT NULL;`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_games_nickname ON games(nickname);`);
 
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS reviews (
+        id          SERIAL PRIMARY KEY,
+        session_id  VARCHAR(50),
+        fingerprint VARCHAR(64) UNIQUE NOT NULL,
+        ip_address  VARCHAR(45),
+        user_agent  TEXT,
+        nickname    VARCHAR(50),
+        recommended BOOLEAN NOT NULL,
+        comment     TEXT,
+        created_at  TIMESTAMPTZ DEFAULT NOW()
+      );
+    `);
+
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_reviews_fingerprint ON reviews(fingerprint);`);
+
     logger.info('Schema inicializado correctamente');
   } finally {
     client.release();
@@ -138,4 +154,51 @@ async function getRanking({ page = 1, limit = 8, search = '' } = {}) {
   return { rows: result.rows, total: countResult.rows[0].total };
 }
 
-module.exports = { initDB, getPool, createGame, updateGame, finishGame, clearSessionKey, loadActiveSessions, getRanking };
+async function getReviews({ page = 1, limit = 12, filter = 'all' } = {}) {
+  const offset = (page - 1) * limit;
+
+  let whereClause = '';
+  if (filter === 'positive') whereClause = 'WHERE recommended = true';
+  else if (filter === 'negative') whereClause = 'WHERE recommended = false';
+
+  const countResult = await getPool().query(
+    `SELECT COUNT(*)::int AS total FROM reviews ${whereClause}`
+  );
+
+  const statsResult = await getPool().query(
+    `SELECT
+       COUNT(*)::int AS total,
+       COUNT(*) FILTER (WHERE recommended = true)::int AS positive,
+       COUNT(*) FILTER (WHERE recommended = false)::int AS negative
+     FROM reviews`
+  );
+
+  const result = await getPool().query(
+    `SELECT id, nickname, recommended, comment, created_at
+     FROM reviews ${whereClause}
+     ORDER BY created_at DESC
+     LIMIT $1 OFFSET $2`,
+    [limit, offset]
+  );
+
+  return {
+    rows: result.rows,
+    total: countResult.rows[0].total,
+    stats: statsResult.rows[0],
+  };
+}
+
+async function canReview(fingerprint) {
+  const result = await getPool().query('SELECT 1 FROM reviews WHERE fingerprint = $1', [fingerprint]);
+  return result.rowCount === 0;
+}
+
+async function saveReview({ fingerprint, ipAddress, userAgent, sessionId, nickname, recommended, comment }) {
+  await getPool().query(
+    `INSERT INTO reviews (fingerprint, ip_address, user_agent, session_id, nickname, recommended, comment)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    [fingerprint, ipAddress || null, userAgent || null, sessionId || null, nickname || null, recommended, comment || null]
+  );
+}
+
+module.exports = { initDB, getPool, createGame, updateGame, finishGame, clearSessionKey, loadActiveSessions, getRanking, getReviews, canReview, saveReview };

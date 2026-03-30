@@ -44,6 +44,8 @@ El juego simula horas y días en tiempo real (un tick cada 2 segundos) y present
 
 - **Ranking global persistente** — clasificación en PostgreSQL ordenada por balance final, con búsqueda y paginación.
 
+- **Sistema de valoraciones** — al volver a la pantalla principal tras una partida se muestra un modal de valoración. Las valoraciones se muestran en `/reviews` con estadísticas globales y filtros por tipo.
+
 ---
 
 ## 🏗️ Arquitectura & Tech Stack
@@ -148,7 +150,7 @@ devops-disaster-simulator/
 │   ├── swagger.json             # OpenAPI docs
 │   └── package.json
 ├── frontend/
-│   ├── app/                     # Páginas Next.js (landing, game, ranking)
+│   ├── app/                     # Páginas Next.js (landing, game, ranking, reviews)
 │   ├── components/              # Componentes UI
 │   ├── context/                 # AudioContext (motor de audio Web API)
 │   ├── hooks/                   # useGameState, useZoneRect, useMobileScale
@@ -175,6 +177,9 @@ El backend expone una API REST documentada con Swagger en `/api-docs`:
 | `GET` | `/api/ssh/:serverId` | Diagnósticos SSH |
 | `GET` | `/api/ranking` | Clasificación global |
 | `POST` | `/api/ai/chat` | Mensaje al asistente Yamlito |
+| `GET` | `/api/review` | Listado de valoraciones (paginado, filtrable) |
+| `GET` | `/api/review/can-review` | Comprobar si el usuario puede valorar |
+| `POST` | `/api/review` | Enviar valoración |
 
 ---
 

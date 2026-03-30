@@ -13,13 +13,73 @@ const SEED_DATA = [
   { nickname: 'PodCrashLoop',    days: 18, balance: 1200,  total_hours: 432,  down_hours: 9.50  },
 ];
 
+const SEED_REVIEWS = [
+  {
+    nickname: 'LordUptime',
+    fingerprint: 'seed_lorduptime_001',
+    recommended: true,
+    comment: 'Me ha enseñado mas sobre gestion de infraestructura que muchos cursos. Ver como un memory leak destruye tu uptime en tiempo real es una leccion que no se olvida.',
+  },
+  {
+    nickname: 'NginxInavible',
+    fingerprint: 'seed_nginxinavible_002',
+    recommended: true,
+    comment: 'La tension cuando el balance cae en picado y tienes tres servicios caidos a la vez es brutal. Muy adictivo.',
+  },
+  {
+    nickname: 'ElSudoReloaded',
+    fingerprint: 'seed_elsudoreloaded_003',
+    recommended: true,
+    comment: 'Perfecto para entender por que el monitoreo proactivo importa. Recomendado a cualquiera que trabaje en ops.',
+  },
+  {
+    nickname: 'Captain_CICD',
+    fingerprint: 'seed_captaincicd_004',
+    recommended: true,
+    comment: null,
+  },
+  {
+    nickname: 'git_push_force',
+    fingerprint: 'seed_gitpushforce_005',
+    recommended: true,
+    comment: 'Me ha pasado perder todos los clientes por un DDoS que no supe gestionar a tiempo. Aprendi la leccion.',
+  },
+  {
+    nickname: 'CronJobiWan',
+    fingerprint: 'seed_cronjobiwan_006',
+    recommended: true,
+    comment: 'El sistema de eventos aleatorios esta muy bien pensado. Nunca sabes cuando va a explotar algo.',
+  },
+  {
+    nickname: 'SenorDeploy',
+    fingerprint: 'seed_senordeploy_007',
+    recommended: true,
+    comment: null,
+  },
+  {
+    nickname: 'PodCrashLoop',
+    fingerprint: 'seed_podcrashloop_008',
+    recommended: true,
+    comment: 'Llevo tres intentos y sigo sin pasar del dia 20 sin quebrar. Eso dice mucho del diseño del juego.',
+  },
+];
+
 async function seed() {
   await initDB();
   const pool = getPool();
 
-  const { rows } = await pool.query('SELECT COUNT(*)::int AS count FROM games');
-  if (rows[0].count > 0) {
-    console.log('[SEED] La tabla games ya tiene datos, saltando seed.');
+  const [{ rows: gRows }, { rows: rRows }] = await Promise.all([
+    pool.query('SELECT COUNT(*)::int AS count FROM games'),
+    pool.query('SELECT COUNT(*)::int AS count FROM reviews'),
+  ]);
+
+  const skipGames   = gRows[0].count > 0;
+  const skipReviews = rRows[0].count > 0;
+
+  if (skipGames)   console.log('[SEED] La tabla games ya tiene datos, saltando seed de games.');
+  if (skipReviews) console.log('[SEED] La tabla reviews ya tiene datos, saltando seed de reviews.');
+
+  if (skipGames && skipReviews) {
     await pool.end();
     return;
   }
@@ -27,18 +87,34 @@ async function seed() {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    for (const g of SEED_DATA) {
-      const uptime = g.total_hours > 0
-        ? Math.round(((g.total_hours - g.down_hours) / g.total_hours) * 10000) / 100
-        : 100;
-      await client.query(
-        `INSERT INTO games (nickname, days, total_hours, down_hours, uptime, balance, clients, finished, end_reason)
-         VALUES ($1, $2, $3, $4, $5, $6, 0, true, 'seed')`,
-        [g.nickname, g.days, g.total_hours, g.down_hours, uptime, g.balance]
-      );
+
+    if (!skipGames) {
+      for (const g of SEED_DATA) {
+        const uptime = g.total_hours > 0
+          ? Math.round(((g.total_hours - g.down_hours) / g.total_hours) * 10000) / 100
+          : 100;
+        await client.query(
+          `INSERT INTO games (nickname, days, total_hours, down_hours, uptime, balance, clients, finished, end_reason)
+           VALUES ($1, $2, $3, $4, $5, $6, 0, true, 'seed')`,
+          [g.nickname, g.days, g.total_hours, g.down_hours, uptime, g.balance]
+        );
+      }
+      console.log(`[SEED] ${SEED_DATA.length} partidas insertadas correctamente.`);
     }
+
+    if (!skipReviews) {
+      for (const r of SEED_REVIEWS) {
+        await client.query(
+          `INSERT INTO reviews (fingerprint, nickname, recommended, comment)
+           VALUES ($1, $2, $3, $4)
+           ON CONFLICT (fingerprint) DO NOTHING`,
+          [r.fingerprint, r.nickname, r.recommended, r.comment]
+        );
+      }
+      console.log(`[SEED] ${SEED_REVIEWS.length} reviews insertadas correctamente.`);
+    }
+
     await client.query('COMMIT');
-    console.log(`[SEED] ${SEED_DATA.length} registros insertados correctamente.`);
   } catch (err) {
     await client.query('ROLLBACK');
     throw err;
