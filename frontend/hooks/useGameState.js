@@ -9,11 +9,12 @@ const fetcher = () => fetchState();
 
 export default function useGameState() {
   const router = useRouter();
+  const isExiting = useRef(false);
   const { data, error, mutate } = useSWR('/api/state', fetcher, {
     refreshInterval: 2000,
     onError: (err) => {
       // Sesion expirada o backend reiniciado, volvemos al landing
-      if (err.status === 401) {
+      if (err.status === 401 && !isExiting.current) {
         sessionStorage.removeItem('sessionKey');
         sessionStorage.removeItem('introSeen');
         router.replace('/');
@@ -123,6 +124,7 @@ export default function useGameState() {
   }, [handleAction]);
 
   const handleReset = useCallback(async () => {
+    isExiting.current = true;
     setResetConfirm(false);
     await endSession().catch(() => {});
     const nick = localStorage.getItem('playerNick') || '';
